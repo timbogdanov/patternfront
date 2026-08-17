@@ -290,6 +290,42 @@ def main() -> int:
     chk("the preview box scrolls when the canvas outgrows it",
         re.search(r"\.pvbox\{[^}]*overflow:auto", css) is not None)
 
+    print("\n=== desktop seam ===")
+    # The same file is the browser build and the Electron renderer. Every native
+    # call sits behind native(), so a browser is never asked for pfNative.
+    chk("native() is the single feature test",
+        "const native=()=>!!(window.pfNative&&window.pfNative.isDesktop);" in js)
+    # Whether the browser build ever touches pfNative is a runtime property, so
+    # it is asserted in verify-behaviour.js by booting with no pfNative at all.
+    # Here we only count the surface, to keep it small and reviewable.
+    calls = sorted({c.split(".")[-1] for c in re.findall(r"window\.pfNative\.\w+", js)})
+    allowed = {"isDesktop", "saveExport", "openDocument", "saveDocument",
+               "readDocument", "onCommand", "setDirty", "setDocumentPath",
+               "openExternal"}
+    chk("renderer uses only the declared native surface",
+        set(calls) <= allowed, f"{calls}")
+    chk("exports route through the one download() seam",
+        "function download(b,n){" in js and "if(native()){" in js
+        and "window.pfNative.saveExport" in js)
+    chk("open and autosave share a load path",
+        "function loadDocFromJSON(raw)" in js
+        and "function restoreDoc(){ return loadDocFromJSON(store.get(SAVE_KEY)); }" in js)
+    chk("a command table backs the native menu",
+        "const COMMANDS={" in js and "window.__pf={commands:COMMANDS" in js)
+    for cmd in ("file.open", "file.save", "file.saveAs", "edit.undo",
+                "edit.clear", "view.fit", "help.shortcuts"):
+        chk(f"command {cmd!r} exists", f"'{cmd}':" in js)
+    # Electron dispatches the accelerator before the page sees the keydown, so
+    # handling it in both places runs it twice.
+    chk("menu-owned accelerators are not handled twice",
+        "const MENU_KEYS=new Set(" in js
+        and "if(meta&&native()&&MENU_KEYS.has(e.key.toLowerCase())) return;" in js)
+    chk("dirty state is tracked for the close prompt",
+        "function markDirty()" in js and "function markClean()" in js
+        and "syncStatus();saveSoon();markDirty();" in js)
+    chk("external links leave the app window",
+        "openExternal" in js and 'a[href^="http"]' in js)
+
     print("\n=== no third-party content ===")
     # OpenFront's cosmetics.json is CC BY-SA 4.0 and includes characters they
     # cannot sublicense onward, so none of it is redistributed here. These are

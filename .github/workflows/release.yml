@@ -1,0 +1,96 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to build and release (e.g. v0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Refuse to cut a release from code that does not pass its own checks.
+      - name: Verify before packaging
+        shell: bash
+        run: ./tools/verify-all.sh
+
+      # macOS builds both arm64 and x64 slices; Windows builds x64 + arm64.
+      # Unsigned: see README, "Install". To turn signing on, add CSC_LINK,
+      # CSC_KEY_PASSWORD, APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD and
+      # APPLE_TEAM_ID as repository secrets and set hardenedRuntime: true in
+      # electron-builder.yml. No other change is needed.
+      - name: Build installers
+        run: npm run dist
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.os }}
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/*.exe
+            dist/latest*.yml
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Collect
+        run: |
+          mkdir -p out
+          find artifacts -type f \( -name '*.dmg' -o -name '*.zip' -o -name '*.exe' \) \
+            -exec cp {} out/ \;
+          ls -la out
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          draft: true
+          generate_release_notes: true
+          files: out/*
+          body: |
+            ## Install
+
+            **macOS** — download the `.dmg` for your chip (`arm64` for Apple
+            silicon, `x64` for Intel). These builds are **unsigned**, so the
+            first launch needs: right-click the app → **Open** → **Open**.
+
+            **Windows** — run the `Setup` installer, or use the portable
+            `.exe`. SmartScreen will show "Windows protected your PC" →
+            **More info** → **Run anyway**.
+
+            Signing certificates cost money this project does not spend yet.
+            If you would rather not trust an unsigned build, `npm run dist`
+            builds it yourself from source in one command.

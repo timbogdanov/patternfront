@@ -689,6 +689,10 @@ let tool='pencil',brush=1,zoom=14,grid=true,toggleErase=true;
 // iframe and in some privacy modes. An unguarded read at module scope takes the
 // whole editor down before it paints: stylesheet applies, title shows, nothing
 // renders. Every access goes through here so that can't happen again.
+// True only inside the Electron shell. Everything native is behind this, so
+// the same file is the browser build and the desktop renderer.
+const native=()=>!!(window.pfNative&&window.pfNative.isDesktop);
+
 const store={
   get(k){try{return localStorage.getItem(k);}catch{return null;}},
   set(k,v){try{localStorage.setItem(k,String(v));return true;}catch{return false;}},
@@ -1109,7 +1113,7 @@ function fitCanvas(){
   zoom=Math.max(1,Math.min(48,z||1));
   $('zoom').value=zoom;$('zoomO').textContent=zoom;
   layout();}
-function commit(){paint();overlay();drawThumbs();syncStatus();saveSoon();}
+function commit(){paint();overlay();drawThumbs();syncStatus();saveSoon();markDirty();}
 function fullSync(){alloc();layout();drawLayers();drawFrames();drawPalette();
   drawPairs();drawStamps();syncColour();syncStatus();syncMode();syncHist();setTool(tool);}
 
@@ -1613,7 +1617,16 @@ function scaled(fi,m){
   const im=new ImageData(doc.w,doc.h);im.data.set(frameRGBA(fi));
   t.getContext('2d').putImageData(im,0,0);
   g.imageSmoothingEnabled=false;g.drawImage(t,0,0,c.width,c.height);return c;}
-function download(b,n){const u=URL.createObjectURL(b),a=document.createElement('a');
+// The one place a file leaves the editor. In a browser that means an anchor
+// with a download attribute; on the desktop it means a real Save dialog. Every
+// export goes through here, so the desktop build needed no other change.
+function download(b,n){
+  if(native()){
+    b.arrayBuffer().then(buf=>window.pfNative.saveExport(n,new Uint8Array(buf)))
+      .then(p=>{ if(p) toast('Saved '+p.split(/[\\/]/).pop()); })
+      .catch(err=>toast('Could not save: '+err.message));
+    return;}
+  const u=URL.createObjectURL(b),a=document.createElement('a');
   a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(u),5000);}
 $('expBtn').onclick=()=>{openOv('ovExp');refreshOF();};
@@ -2006,6 +2019,9 @@ addEventListener('keydown',e=>{
   const tag=(e.target.tagName||'').toLowerCase();
   if(tag==='input'||tag==='textarea'||tag==='select')return;
   const meta=e.metaKey||e.ctrlKey;
+  // On the desktop the native menu owns these accelerators and fires first;
+  // handling them here as well would run every one of them twice.
+  if(meta&&native()&&MENU_KEYS.has(e.key.toLowerCase())) return;
   if(meta&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();return;}
   if(meta&&e.key.toLowerCase()==='y'){e.preventDefault();redo();return;}
   if(meta&&e.key.toLowerCase()==='a'){e.preventDefault();sel={x:0,y:0,w:doc.w,h:doc.h};
@@ -2109,5 +2125,89 @@ if(restored) setTimeout(()=>toast('Restored your last pattern','Start fresh',sta
 new MutationObserver(()=>{paint();overlay();})
   .observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 
+/* ═══════ desktop ═══════
+   Everything below is inert in a browser. The Electron shell installs
+   window.pfNative via a contextBridge preload; without it native() is false,
+   markDirty() is a no-op and no command bridge is published. */
+
+let docPath=null, dirty=false;
+function markDirty(){
+  if(!native()||dirty) return;
+  dirty=true; window.pfNative.setDirty(true);}
+function markClean(){
+  dirty=false;
+  if(native()) window.pfNative.setDirty(false);}
+function showPath(p){
+  docPath=p||null;
+  if(native()) window.pfNative.setDocumentPath(docPath);}
+
+async function openDocument(){
+  const r=await window.pfNative.openDocument();
+  if(!r) return;                                  // cancelled
+  if(!loadDocFromJSON(r.data)){
+    toast('That file is not a PatternFront document');return;}
+  past.length=0;future.length=0;
+  aLayer=0;aFrame=0;fg=2;bg=1;sel=null;disarmStamp();
+  $('cw').value=doc.w;$('ch').value=doc.h;
+  fullSync();fitCanvas();markClean();showPath(r.path);
+  toast('Opened '+r.path.split(/[\\/]/).pop());}
+
+async function saveDocument(saveAs){
+  const p=await window.pfNative.saveDocument(saveAs?null:docPath,serialiseDoc());
+  if(!p) return;                                  // cancelled
+  markClean();showPath(p);
+  toast('Saved '+p.split(/[\\/]/).pop());}
+
+// The menu drives the same functions the buttons do — one implementation each,
+// so a menu item cannot drift from its on-screen twin.
+const COMMANDS={
+  'file.new':      ()=>{startFresh();markClean();showPath(null);},
+  'file.open':     ()=>openDocument(),
+  'file.save':     ()=>saveDocument(false),
+  'file.saveAs':   ()=>saveDocument(true),
+  'file.openPath': p=>window.pfNative.readDocument(p).then(t=>{
+                       if(!t||!loadDocFromJSON(t)){toast('Could not open that file');return;}
+                       past.length=0;future.length=0;aLayer=0;aFrame=0;
+                       fg=2;bg=1;sel=null;disarmStamp();
+                       $('cw').value=doc.w;$('ch').value=doc.h;
+                       fullSync();fitCanvas();markClean();showPath(p);}),
+  'export.png':    ()=>$('exPNG').click(),
+  'export.sheet':  ()=>$('exSheet').click(),
+  'export.gif':    ()=>$('exGIF').click(),
+  'export.pattern':()=>{openOv('ovExp');refreshOF();},
+  'edit.undo':     ()=>undo(),
+  'edit.redo':     ()=>redo(),
+  'edit.clear':    ()=>clearArt(false),
+  'edit.clearAll': ()=>clearArt(true),
+  'edit.selectAll':()=>{sel={x:0,y:0,w:doc.w,h:doc.h};overlay();syncStatus();},
+  'edit.deselect': ()=>{sel=null;overlay();syncStatus();},
+  'view.zoomIn':   ()=>{zoom=Math.min(48,zoom+1);$('zoom').value=zoom;
+                        $('zoomO').textContent=zoom;layout();},
+  'view.zoomOut':  ()=>{zoom=Math.max(1,zoom-1);$('zoom').value=zoom;
+                        $('zoomO').textContent=zoom;layout();},
+  'view.fit':      ()=>fitCanvas(),
+  'view.grid':     ()=>{$('grid').click();},
+  'view.zen':      ()=>toggleZen(),
+  'view.scale':    v=>applyUiScale(+v),
+  'help.shortcuts':()=>toggleHelp(),
+};
+
+// Keys the native menu owns. Electron fires the accelerator BEFORE the page
+// sees the keydown, so leaving these enabled here would undo twice per press.
+const MENU_KEYS=new Set(['z','y','a','d','n','o','s']);
+
+if(native()){
+  window.pfNative.onCommand((id,arg)=>{
+    const fn=COMMANDS[id];
+    if(fn) fn(arg); else console.warn('unknown command',id);});
+  window.pfNative.setDirty(false);
+  // Asked before the window closes, so unsaved work cannot vanish silently.
+  window.__pfState=()=>({dirty,path:docPath,json:serialiseDoc()});
+  document.querySelectorAll('a[href^="http"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+      e.preventDefault();window.pfNative.openExternal(a.href);});});
+}
+// Exposed for the smoke test and for anything driving the editor from outside.
+window.__pf={commands:COMMANDS,isNative:native};
 })();
 </script>

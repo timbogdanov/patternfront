@@ -630,6 +630,66 @@ function clearTests() {
       vm.runInContext('snaps', snapCtx) === 0);
 }
 
+/* ── 9. the browser build must not notice the desktop code ─────────────── */
+
+async function browserBuildTests() {
+  console.log('\n=== browser build is untouched ===');
+
+  // A browser has no window.pfNative. If any of the desktop code reached for it
+  // unguarded, this throws — which is the whole point of native() existing.
+  const ctx = sandbox({ window: {}, console });
+  let threw = null;
+  try {
+    run(ctx, [
+      grabConst('native'),
+      'globalThis._isNative = native();',
+      grabFunction('markDirty'), grabFunction('markClean'),
+      'var dirty=false;',
+      'markDirty(); markClean(); markDirty();',
+    ].join('\n'));
+  } catch (e) { threw = e.message; }
+
+  chk('native() is false with no pfNative', threw === null && ctx._isNative === false,
+      threw || `native()=${ctx._isNative}`);
+  chk('dirty tracking is inert in a browser',
+      threw === null && vm.runInContext('dirty', ctx) === false);
+
+  // ...and true when the shell installs it.
+  const desk = sandbox({ window: { pfNative: { isDesktop: true } } });
+  run(desk, [grabConst('native'), 'globalThis._n = native();'].join('\n'));
+  chk('native() is true inside the shell', desk._n === true);
+
+  // download() must not build an anchor on the desktop, and must not call
+  // pfNative in a browser. Run the real function both ways.
+  const dl = grabFunction('download');
+  const seen = { anchor: 0, saved: null };
+  const web = sandbox({
+    window: {},
+    URL: { createObjectURL: () => 'blob:x', revokeObjectURL() {} },
+    document: {
+      createElement: () => { seen.anchor++; return { click() {}, remove() {}, style: {} }; },
+      body: { appendChild() {} },
+    },
+    setTimeout,
+  });
+  run(web, [grabConst('native'), dl,
+    "download({arrayBuffer:()=>Promise.resolve(new ArrayBuffer(4))},'a.png');"].join('\n'));
+  chk('a browser still gets an anchor download', seen.anchor === 1);
+
+  const app = sandbox({
+    window: { pfNative: { isDesktop: true,
+      saveExport: (n) => { seen.saved = n; return Promise.resolve('/tmp/' + n); } } },
+    toast: () => {},
+    document: { createElement: () => { seen.anchor++; return {}; } },
+  });
+  run(app, [grabConst('native'), dl,
+    "download({arrayBuffer:()=>Promise.resolve(new ArrayBuffer(4))},'b.png');"].join('\n'));
+  // download() reads the blob asynchronously, so let the microtasks drain.
+  await new Promise(r => setTimeout(r, 10));
+  chk('the desktop gets a save dialog, not an anchor',
+      seen.saved === 'b.png' && seen.anchor === 1, `anchors=${seen.anchor}`);
+}
+
 /* ── run ───────────────────────────────────────────────────────────────── */
 
 oversize.then(async () => {
@@ -639,6 +699,7 @@ oversize.then(async () => {
   fitTests();
   grabTests();
   clearTests();
+  await browserBuildTests();
   console.log();
   if (failures) {
     console.log(`*** ${failures} FAILURE(S) ***`);

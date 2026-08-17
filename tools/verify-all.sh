@@ -42,6 +42,8 @@ run "map-scale sampling"           python3 tools/preview_prototype.py
 run "UI design rules"              python3 tools/verify-ui.py
 run "stamp library"                python3 tools/verify-stamps.py
 run "editor behaviour"             node    tools/verify-behaviour.js
+run "desktop documents"            node    tools/verify-documents.js
+run "electron shell"               python3 tools/verify-electron.py
 
 # Optional: only runs with a local OpenFront checkout.
 run "docs match OpenFront source"  python3 tools/verify-docs.py "$OPENFRONT"

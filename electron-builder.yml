@@ -1,0 +1,78 @@
+appId: io.github.timbogdanov.patternfront
+productName: PatternFront
+copyright: Copyright © 2026 timbogdanov
+
+directories:
+  output: dist
+  buildResources: build
+
+# Only what the app actually runs. The docs, tools and tests stay in the repo
+# but have no business inside a shipped binary.
+files:
+  - electron/**/*
+  - app/**/*
+  - package.json
+  - LICENSE
+  - "!**/.DS_Store"
+
+# A .patternfront file is the JSON that serialiseDoc() produces. Registering it
+# is what makes double-clicking one in Finder or Explorer open the editor.
+fileAssociations:
+  - ext: patternfront
+    name: PatternFront Pattern
+    description: PatternFront 1-bit pattern
+    role: Editor
+    rank: Owner
+    icon: build/icon.png
+
+mac:
+  category: public.app-category.graphics-design
+  icon: build/icon.png
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+    - target: zip
+      arch: [arm64, x64]
+  # Unsigned by default: signing needs an Apple Developer ID ($99/yr) that this
+  # project does not assume you have. The hardened runtime and entitlements are
+  # wired up but inert until CSC_LINK is set — see docs in README, "Building".
+  # Turning signing on is setting secrets, not editing this file.
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    NSHighResolutionCapable: true
+    LSApplicationCategoryType: public.app-category.graphics-design
+
+dmg:
+  artifactName: ${productName}-${version}-${arch}.${ext}
+  contents:
+    - x: 140
+      y: 200
+    - x: 400
+      y: 200
+      type: link
+      path: /Applications
+
+win:
+  icon: build/icon.png
+  target:
+    - target: nsis
+      arch: [x64, arm64]
+    - target: portable
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  artifactName: ${productName}-Setup-${version}-${arch}.${ext}
+
+portable:
+  artifactName: ${productName}-${version}-portable.${ext}
+
+# electron-builder would otherwise try to reach out during CI runs.
+publish: null
