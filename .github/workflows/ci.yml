@@ -87,8 +87,12 @@ jobs:
       # bit; npm cannot install it that way. The alternative is --no-sandbox,
       # which would mean the smoke test exercises a different configuration
       # from the one users actually run — so fix the permissions instead.
+      #
+      # The binary is fetched lazily rather than during `npm ci`, so it has to
+      # be pulled down before there is anything to chown.
       - name: Let Chromium use its sandbox
         run: |
+          npx electron --version
           sudo chown root:root node_modules/electron/dist/chrome-sandbox
           sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
 
