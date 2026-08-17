@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A second push to a PR should cancel the first run, not queue behind it.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verification suites
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The suites are pure stdlib on both sides — nothing to install. The
+      # OpenFront cross-check has no checkout here and skips loudly; that is
+      # reported, never silently treated as a pass.
+      - name: Run every check
+        run: ./tools/verify-all.sh
+
+      - name: Fixtures are in sync with the generator
+        run: |
+          python3 tools/gen-codec-fixtures.py
+          git diff --exit-code tests/fixtures/codec.json \
+            || (echo "::error::tests/fixtures/codec.json is stale — run python3 tools/gen-codec-fixtures.py"; exit 1)
+
+      - name: Stamps are in sync with the generator
+        run: |
+          python3 tools/gen-stamps.py --emit > /tmp/stamps.txt
+          python3 - <<'PY'
+          import re, sys
+          gen = re.search(r"const STAMPS=\[\n(.*?)\n\];", open("/tmp/stamps.txt").read(), re.S)
+          app = re.search(r"const STAMPS=\[\n(.*?)\n\];",
+                          open("app/patternfront.html").read(), re.S)
+          if not gen or not app:
+              sys.exit("could not find a STAMPS block")
+          g = [l.strip() for l in gen.group(1).splitlines() if l.strip()]
+          a = [l.strip() for l in app.group(1).splitlines() if l.strip()]
+          if g != a:
+              print(f"::error::the editor's STAMPS table does not match the generator "
+                    f"({len(a)} in the app, {len(g)} generated)")
+              for line in [x for x in g if x not in a][:5]:
+                  print("  generated but missing:", line)
+              for line in [x for x in a if x not in g][:5]:
+                  print("  in the app but not generated:", line)
+              sys.exit(1)
+          print(f"{len(a)} stamps match")
+          PY

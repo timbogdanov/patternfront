@@ -1,0 +1,27 @@
+name: Bug report
+description: Something does not work as it should
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you got instead.
+    validations: {required: true}
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Where
+      options: [macOS app, Windows app, In a browser]
+    validations: {required: true}
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: "About panel: PatternFront → About, or Help → About"
+    validations: {required: true}
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshot or pattern data
+      description: A screenshot, or the patternData string if a specific pattern is involved.
