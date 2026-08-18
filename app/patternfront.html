@@ -749,7 +749,8 @@ function syncHist(){$('undo').disabled=!past.length;$('redo').disabled=!future.l
   $('stHist').textContent='⤺ '+past.length;}
 
 /* ═══════ compositing ═══════ */
-function composite(fi,out,skipLayer){
+function composite(fi,out,skipLayer,pal){
+  pal=pal||doc.palette;
   out.fill(0);
   for(let li=0;li<doc.layers.length;li++){
     const L=doc.layers[li];if(!L.visible||L.opacity<=0)continue;
@@ -759,33 +760,46 @@ function composite(fi,out,skipLayer){
       // While dragging, show the vacated cells as background, not a hole.
       if(li===skipLayer&&lift&&lift.mask[i]) pi=liftFill();
       if(!pi)continue;
-      const col=doc.palette[pi];if(!col||!col.a)continue;
+      const col=pal[pi];if(!col||!col.a)continue;
       const sa=(col.a/255)*L.opacity,o=i*4,da=out[o+3]/255,na=sa+da*(1-sa);
       if(na<=0)continue;
       out[o]=(col.r*sa+out[o]*da*(1-sa))/na;
       out[o+1]=(col.g*sa+out[o+1]*da*(1-sa))/na;
       out[o+2]=(col.b*sa+out[o+2]*da*(1-sa))/na;
       out[o+3]=na*255;}
-    if(li===skipLayer&&lift)drawLift(out);}
+    if(li===skipLayer&&lift)drawLift(out,pal);}
 }
 // What a grabbed shape leaves behind: the background swatch when there is one,
 // otherwise transparent.
 function liftFill(){
   return doc.palette.length>1 ? Math.max(1,Math.min(bg,doc.palette.length-1)) : 0;}
-function drawLift(out){
+function drawLift(out,pal){
+  pal=pal||doc.palette;
   for(const[i,v] of lift.pix){
     let x=(i%doc.w)+lift.dx,y=((i/doc.w)|0)+lift.dy;
     if(wrapDraw){x=mod(x,doc.w);y=mod(y,doc.h);}else if(!inside(x,y))continue;
-    const col=doc.palette[v];if(!col||!col.a)continue;
+    const col=pal[v];if(!col||!col.a)continue;
     const o=(y*doc.w+x)*4;
     out[o]=col.r;out[o+1]=col.g;out[o+2]=col.b;out[o+3]=col.a;}
 }
 
 /* ═══════ render ═══════ */
+// A pattern is one bit per pixel; the colour is the *game's*, applied when it
+// paints a territory. So the canvas shows structure, not colour — ink and paper,
+// whatever duotone is selected — and the preview is where that duotone is worth
+// seeing, because the preview is the thing standing in for the game.
+//
+// Only for a two-colour document. Once there are more colours than the format
+// carries, the palette is the artwork rather than a stand-in for it, and
+// flattening it to black and white would be editing blind.
+const EDIT_PAL=[{r:0,g:0,b:0,a:0},{r:255,g:255,b:255,a:255},{r:0,g:0,b:0,a:255}];
+const editPal=()=>twoColour()?EDIT_PAL:doc.palette;
 const cv=$('cv'),ov=$('ov'),holder=$('holder');
 const gc=cv.getContext('2d',{willReadFrequently:true}),go=ov.getContext('2d');
 let buf=null,img=null;
-const alloc=()=>{buf=new Uint8ClampedArray(npx()*4);img=new ImageData(doc.w,doc.h);};
+let pvBuf=null;
+const alloc=()=>{buf=new Uint8ClampedArray(npx()*4);pvBuf=new Uint8ClampedArray(npx()*4);
+  img=new ImageData(doc.w,doc.h);};
 function layout(){
   if(!buf) return;          // nothing to paint until alloc() has run
   cv.width=doc.w;cv.height=doc.h;
@@ -793,13 +807,13 @@ function layout(){
   ov.width=doc.w*Z();ov.height=doc.h*Z();
   paint();overlay();}
 function paint(){
-  composite(aFrame,buf,lift?aLayer:-1);
+  composite(aFrame,buf,lift?aLayer:-1,editPal());
   img.data.set(buf);gc.putImageData(img,0,0);
   if(onion>0){
     const tmp=new Uint8ClampedArray(npx()*4);
     for(let k=onion;k>=1;k--)for(const[d,t] of[[-k,[255,90,90]],[k,[90,170,255]]]){
       const fi=aFrame+d;if(fi<0||fi>=doc.frames.length)continue;
-      composite(fi,tmp,-1);
+      composite(fi,tmp,-1,editPal());
       const im=new ImageData(doc.w,doc.h);
       for(let i=0;i<npx();i++){if(!tmp[i*4+3])continue;
         im.data[i*4]=t[0];im.data[i*4+1]=t[1];im.data[i*4+2]=t[2];
@@ -867,12 +881,14 @@ function pvFitScale(){
   return Math.max(1,Math.floor(Math.min(w/(doc.w*n), h/(doc.h*n))));}
 function pvEff(){return pvScale>0?pvScale:pvFitScale();}
 function drawPreview(){
-  if(!buf) return;
+  if(!pvBuf) return;
   const n=pvTile?3:1,s=pvEff();
   const zEl=$('pvZ'); if(zEl) zEl.textContent=pvScale>0?s+'×':'fit '+s+'×';
   pvC.width=doc.w*n*s;pvC.height=doc.h*n*s;
   const t=document.createElement('canvas');t.width=doc.w;t.height=doc.h;
-  const im=new ImageData(doc.w,doc.h);im.data.set(buf);
+  // The document's own palette, so the duotone shows here and only here.
+  composite(aFrame,pvBuf,lift?aLayer:-1,doc.palette);
+  const im=new ImageData(doc.w,doc.h);im.data.set(pvBuf);
   t.getContext('2d').putImageData(im,0,0);
   pvG.imageSmoothingEnabled=false;pvG.clearRect(0,0,pvC.width,pvC.height);
   for(let y=0;y<n;y++)for(let x=0;x<n;x++)
@@ -1318,13 +1334,13 @@ function syncColour(){
   if(fg>0){$('picker').value=rgbHex(a);
     const hf=$('hex'); if(hf&&document.activeElement!==hf) hf.value=rgbHex(a);}
   [...$('pal').children].forEach((el,i)=>el.setAttribute('aria-current',String(i===fg)));}
-function thumb(c,fi){const t=new Uint8ClampedArray(npx()*4);composite(fi,t,-1);
+function thumb(c,fi){const t=new Uint8ClampedArray(npx()*4);composite(fi,t,-1,editPal());
   c.width=doc.w;c.height=doc.h;const im=new ImageData(doc.w,doc.h);im.data.set(t);
   c.getContext('2d').putImageData(im,0,0);}
 function layerThumb(c,li){const src=doc.frames[aFrame].cels[li];
   c.width=doc.w;c.height=doc.h;const im=new ImageData(doc.w,doc.h);
   for(let i=0;i<npx();i++){const v=src?src[i]:0;if(!v)continue;
-    const col=doc.palette[v];if(!col)continue;
+    const col=editPal()[v];if(!col)continue;
     im.data[i*4]=col.r;im.data[i*4+1]=col.g;im.data[i*4+2]=col.b;im.data[i*4+3]=col.a;}
   c.getContext('2d').putImageData(im,0,0);}
 const EYE='<svg viewBox="0 0 20 20"><path d="M1.5 10S4.5 4.5 10 4.5 18.5 10 18.5 10 15.5 15.5 10 15.5 1.5 10 1.5 10z"/><circle cx="10" cy="10" r="2.3"/></svg>';

@@ -7,6 +7,27 @@ big. It is generated rather than hand-painted so it stays consistent with the
 artwork the app makes, and so there is no binary blob in the repo that nobody
 can regenerate.
 
+Three things the icon has to do, in order:
+
+  * Sit correctly in a Dock. macOS icons are a superellipse — the "squircle" —
+    on a transparent field, not a full-bleed square. An app that ships a square
+    reads as unfinished next to everything Apple ships. The tile here is 824 of
+    1024 px, which is Apple's own proportion, and the corner is a real
+    superellipse rather than a rounded rectangle, which is visibly different at
+    this size.
+
+  * Say what the app is. A bare letterform says "some app starting with P". A
+    tiling pattern says "this makes patterns", and the diagonal used here is a
+    pattern the editor actually ships.
+
+  * Survive 16px. Everything is on an 8-cell grid with no detail finer than one
+    cell, so the motif holds together in a Finder list or a taskbar.
+
+The colour tells the same story the app now tells: the pattern is one bit per
+pixel, and colour arrives when something paints it. One diagonal band carries
+that pattern in duotone, the way the preview shows it; the rest stays in plain
+ink, the way the canvas shows it.
+
 electron-builder derives .icns and .ico from this single 1024x1024 PNG, so this
 is the only image the build needs.
 
@@ -25,37 +46,38 @@ ROOT = os.path.dirname(HERE)
 OUT = os.path.join(ROOT, "build", "icon.png")
 
 SIZE = 1024
-GRID = 16            # the icon is a 16x16 pattern, blown up
-CELL = SIZE // GRID
+TILE = 824               # Apple's proportion for the icon body within the canvas
+EXPONENT = 5.0           # superellipse power; 5 is close to Apple's squircle
+SS = 4                   # supersampling per axis, for a clean tile edge
+GRID = 8                 # the motif is an 8x8 pattern, blown up
 
-# Aseprite's palette, which is the app's own chrome.
-INK = (0xE6, 0xE6, 0xE8)
-PAPER = (0x20, 0x21, 0x25)
-ACCENT = (0x29, 0x62, 0xFF)
+# The app's own chrome, so the icon and the window agree.
+PAPER = (0x20, 0x21, 0x25)      # --well, the editor's background
+INK = (0xE6, 0xE6, 0xE8)        # the editor's foreground
+DUO_A = (0x29, 0x62, 0xFF)      # the accent, standing in for a duotone primary
+DUO_B = (0xF1, 0x7A, 0x3C)      # its warm complement, the secondary
 
-# A "P" that also reads as a tiling motif: the counter and the stem give it
-# structure at 16px, and it still resolves at 32px in a taskbar.
+# A diagonal, which is one of the patterns the editor ships, at the coarsest
+# step that still reads as motion. Two cells of ink, two of paper, shifted one
+# cell per row — it tiles seamlessly, which is the property the whole app is
+# about. Eight cells across means nothing is finer than an eighth of the tile,
+# so the motif still holds at 16px.
 ART = [
-    "................",
-    "..############..",
-    "..############..",
-    "..####....####..",
-    "..####....####..",
-    "..####....####..",
-    "..####....####..",
-    "..############..",
-    "..############..",
-    "..####..........",
-    "..####..........",
-    "..####..........",
-    "..####..........",
-    "..####..........",
-    "..####..........",
-    "................",
+    "".join("#" if ((x - y) % 4) < 2 else "." for x in range(GRID))
+    for y in range(GRID)
 ]
+
+# One stripe carries the duotone. An earlier version coloured half the tile,
+# which put colour on the same diagonal as the stripes and turned the whole
+# thing to noise at small sizes — the eye had no edge to hold on to. A single
+# band leaves the icon reading as a 1-bit pattern with one thing happening in
+# it, which is also the honest description of the app.
+def in_band(cx: int, cy: int) -> bool:
+    return (cx - cy) // 4 == 0
 
 
 def png(path: str, width: int, height: int, pixel) -> None:
+    """Write an 8-bit RGBA PNG. `pixel(x, y)` returns (r, g, b, a)."""
     rows = bytearray()
     for y in range(height):
         rows.append(0)                      # filter: none
@@ -67,11 +89,28 @@ def png(path: str, width: int, height: int, pixel) -> None:
                 + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF))
 
     blob = (b"\x89PNG\r\n\x1a\n"
-            + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
+            + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0))
             + chunk(b"IDAT", zlib.compress(bytes(rows), 9))
             + chunk(b"IEND", b""))
     os.makedirs(os.path.dirname(path), exist_ok=True)
     open(path, "wb").write(blob)
+
+
+def coverage(x: int, y: int, half: float, cx: float) -> float:
+    """
+    How much of pixel (x, y) falls inside the superellipse, 0..1.
+
+    Sampled rather than solved: the curve has no closed form for pixel area, and
+    at SS=4 the error is well under one 8-bit step.
+    """
+    hits = 0
+    for sy in range(SS):
+        for sx in range(SS):
+            px = (x + (sx + 0.5) / SS - cx) / half
+            py = (y + (sy + 0.5) / SS - cx) / half
+            if abs(px) ** EXPONENT + abs(py) ** EXPONENT <= 1.0:
+                hits += 1
+    return hits / (SS * SS)
 
 
 def main() -> int:
@@ -79,19 +118,39 @@ def main() -> int:
         print(f"ART must be {GRID}x{GRID}")
         return 1
 
-    # A thin accent rule along the bottom, the way the editor marks the active
-    # thing. Keeps the icon from being two flat greys.
-    rule_top = SIZE - CELL // 2
+    inset = (SIZE - TILE) / 2
+    half = TILE / 2
+    centre = inset + half
+    cell = TILE / GRID
 
     def pixel(x: int, y: int):
-        if y >= rule_top:
-            return ACCENT
-        return INK if ART[y // CELL][x // CELL] == "#" else PAPER
+        a = coverage(x, y, half, centre)
+        if a <= 0.0:
+            return (0, 0, 0, 0)
+
+        # Which pattern cell this pixel belongs to, clamped at the tile edge.
+        cx = min(GRID - 1, max(0, int((x - inset) // cell)))
+        cy = min(GRID - 1, max(0, int((y - inset) // cell)))
+        lit = ART[cy][cx] == "#"
+
+        if in_band(cx, cy):
+            rgb = DUO_B if lit else DUO_A
+        else:
+            rgb = INK if lit else PAPER
+
+        return (rgb[0], rgb[1], rgb[2], round(a * 255))
 
     png(OUT, SIZE, SIZE, pixel)
     print(f"wrote {OUT}  ({SIZE}x{SIZE}, {os.path.getsize(OUT):,} bytes)")
-    for r in ART:
-        print("  " + r.replace("#", "██").replace(".", "  "))
+    for cy in range(GRID):
+        line = ""
+        for cx in range(GRID):
+            lit = ART[cy][cx] == "#"
+            if in_band(cx, cy):
+                line += "▓▓" if lit else "░░"
+            else:
+                line += "██" if lit else "  "
+        print("  " + line)
     return 0
 
 
