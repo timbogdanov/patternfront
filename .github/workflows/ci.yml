@@ -153,6 +153,15 @@ jobs:
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
           GH_TOKEN: ""
+          # electron-builder skips signing on pull-request builds, which exists
+          # to keep a fork from getting at real signing certificates. This
+          # project has none — `identity: "-"` is ad-hoc, no secret material of
+          # any kind — so the guard protects nothing here and only produces an
+          # unsealed bundle that the next step then rejects.
+          #
+          # If a Developer ID is ever added as a secret, remove this: the guard
+          # becomes load-bearing again.
+          CSC_FOR_PULL_REQUEST: true
 
 
       # A bundle whose signature no longer matches its contents runs fine here,
