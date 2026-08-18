@@ -11,3 +11,4 @@ build/icon.ico
 # Scratch output
 *.tmp
 *.patternfront
+stamps-generated.txt

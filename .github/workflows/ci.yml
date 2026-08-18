@@ -50,13 +50,19 @@ jobs:
 
       - name: Stamps are in sync with the generator
         shell: bash
+        # Writes into the workspace, not /tmp — that path does not exist for
+        # Windows Python. PYTHONIOENCODING keeps the redirect utf-8 there too,
+        # where stdout would otherwise default to cp1252.
+        env:
+          PYTHONIOENCODING: utf-8
         run: |
-          python3 tools/gen-stamps.py --emit > /tmp/stamps.txt
+          python3 tools/gen-stamps.py --emit > stamps-generated.txt
           python3 - <<'PY'
           import re, sys
-          gen = re.search(r"const STAMPS=\[\n(.*?)\n\];", open("/tmp/stamps.txt").read(), re.S)
+          gen = re.search(r"const STAMPS=\[\n(.*?)\n\];",
+                          open("stamps-generated.txt", encoding="utf-8").read(), re.S)
           app = re.search(r"const STAMPS=\[\n(.*?)\n\];",
-                          open("app/patternfront.html").read(), re.S)
+                          open("app/patternfront.html", encoding="utf-8").read(), re.S)
           if not gen or not app:
               sys.exit("could not find a STAMPS block")
           g = [l.strip() for l in gen.group(1).splitlines() if l.strip()]
