@@ -397,7 +397,9 @@ function previewTests() {
       $: () => null,
     });
     run(ctx, [
-      `var doc={w:${W},h:${H}},buf=new Uint8Array(${W * H * 4});`,
+      `var doc={w:${W},h:${H},palette:[]},buf=new Uint8Array(${W * H * 4});`,
+      `var pvBuf=new Uint8Array(${W * H * 4}),aFrame=0,lift=null;`,
+      'function composite(){}',
       `var pvScale=${pvScale},pvTile=${pvTile};`,
       grabFunction('pvEff'), grabFunction('drawPreview'), 'drawPreview();',
     ].join('\n'));
@@ -475,6 +477,66 @@ function fitTests() {
   }
   chk('zoom halves when the interface scale doubles',
       z[1] === 40 && z[2] === 20, `1x->${z[1]}, 2x->${z[2]}`);
+}
+
+/* ── 6b. duotone belongs to the preview, not the canvas ────────────────── */
+//
+// A pattern is one bit per pixel; the colour comes from the game painting a
+// territory. Picking a duotone used to recolour the canvas as well, which made
+// the editing surface look like the artwork carried those colours. The canvas
+// now draws structure in black and white and the preview carries the duotone —
+// so both palettes have to reach composite() and produce different pixels.
+
+function duotoneTests() {
+  console.log('\n=== duotone reaches the preview, not the canvas ===');
+
+  const W = 2, H = 1;
+  const RED = { r: 255, g: 0, b: 0, a: 255 }, BLUE = { r: 0, g: 0, b: 255, a: 255 };
+  const build = (palette) => ({
+    w: W, h: H, palette,
+    layers: [{ visible: true, opacity: 1 }],
+    frames: [{ cels: [[1, 2]] }],
+  });
+
+  const render = (docPalette, pal) => {
+    const ctx = sandbox({});
+    run(ctx, [
+      `var doc=${JSON.stringify(build(docPalette))};`,
+      'var lift=null;',
+      'function npx(){return doc.w*doc.h;}',
+      grabConst('EDIT_PAL'), grabConst('editPal'),
+      grabFunction('twoColour'), grabFunction('composite'),
+      grabFunction('liftFill'), grabFunction('drawLift'),
+      `var out=new Uint8ClampedArray(${W * H * 4});`,
+      `composite(0,out,-1,${pal});`,
+      'var px=[[out[0],out[1],out[2]],[out[4],out[5],out[6]]];',
+    ].join('\n'));
+    return ctx.px;
+  };
+
+  const duo = [{ r: 0, g: 0, b: 0, a: 0 }, RED, BLUE];
+
+  const onCanvas = render(duo, 'editPal()');
+  chk('the canvas draws a two-colour document as paper and ink',
+      JSON.stringify(onCanvas) === JSON.stringify([[255, 255, 255], [0, 0, 0]]),
+      JSON.stringify(onCanvas));
+
+  const onPreview = render(duo, 'doc.palette');
+  chk('the preview draws it in the chosen duotone',
+      JSON.stringify(onPreview) === JSON.stringify([[255, 0, 0], [0, 0, 255]]),
+      JSON.stringify(onPreview));
+
+  chk('so the two surfaces disagree, which is the whole point',
+      JSON.stringify(onCanvas) !== JSON.stringify(onPreview));
+
+  // Beyond two colours the palette is the artwork, not a stand-in for the
+  // game's colours, so flattening it would mean editing blind.
+  const many = [{ r: 0, g: 0, b: 0, a: 0 }, RED, BLUE,
+                { r: 0, g: 255, b: 0, a: 255 }, { r: 255, g: 255, b: 0, a: 255 }];
+  const richCanvas = render(many, 'editPal()');
+  chk('a document past two colours keeps its real palette on the canvas',
+      JSON.stringify(richCanvas) === JSON.stringify([[255, 0, 0], [0, 0, 255]]),
+      JSON.stringify(richCanvas));
 }
 
 /* ── 7. grab: 8-connected flood fill over an ASCII scene ───────────────── */
@@ -696,6 +758,7 @@ oversize.then(async () => {
   colourTests();
   loadTests();
   previewTests();
+  duotoneTests();
   fitTests();
   grabTests();
   clearTests();

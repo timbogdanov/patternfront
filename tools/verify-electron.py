@@ -122,6 +122,12 @@ def main() -> int:
         and os.path.exists(os.path.join(ROOT, "build", "entitlements.mac.plist")))
     chk("an icon exists for the build",
         os.path.exists(os.path.join(ROOT, "build", "icon.png")))
+    # Packaging rewrites the bundle Electron shipped linker-signed. Without a
+    # re-seal the signature no longer describes its contents, and macOS calls a
+    # downloaded build "damaged" — a refusal the user cannot clear, unlike the
+    # ordinary unidentified-developer one. Unquarantined builds run regardless,
+    # so nothing else in this suite would notice.
+    chk('the mac bundle is ad-hoc signed at minimum', 'identity: "-"' in yml)
 
     print()
     if fails:

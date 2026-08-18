@@ -33,10 +33,33 @@ mac:
       arch: [arm64, x64]
     - target: zip
       arch: [arm64, x64]
-  # Unsigned by default: signing needs an Apple Developer ID ($99/yr) that this
-  # project does not assume you have. The hardened runtime and entitlements are
-  # wired up but inert until CSC_LINK is set — see docs in README, "Building".
-  # Turning signing on is setting secrets, not editing this file.
+  # Ad-hoc signed. Not a substitute for a Developer ID — Gatekeeper still
+  # refuses the app on first launch — but it is the difference between a refusal
+  # the user can clear and one they cannot.
+  #
+  # Electron's binaries arrive linker-signed. Packaging rewrites the bundle:
+  # the executable is renamed, Info.plist is rebuilt, the icon and app.asar are
+  # added. With signing switched off entirely, that leaves a signature whose
+  # seal no longer matches its contents, and codesign says:
+  #
+  #     code has no resources but signature indicates they must be present
+  #
+  # An unquarantined build runs anyway, so this never showed up in local or CI
+  # testing. A *downloaded* build carries com.apple.quarantine, Gatekeeper reads
+  # the broken seal, and macOS reports "PatternFront is damaged and can't be
+  # opened. You should eject the disk image." There is no right-click → Open
+  # past that one; the app is simply dead on arrival.
+  #
+  # Ad-hoc signing re-seals the bundle so it is internally consistent. Gatekeeper
+  # then gives the ordinary unidentified-developer refusal, which right-click →
+  # Open does clear.
+  identity: "-"
+
+  # A real Developer ID ($99/yr) is what removes the warning altogether, and
+  # also stops macOS running the app translocated from a random read-only path.
+  # The hardened runtime and entitlements are wired up but inert until CSC_LINK
+  # is set — see README, "Building". Turning it on is setting secrets, not
+  # editing this file.
   hardenedRuntime: false
   gatekeeperAssess: false
   entitlements: build/entitlements.mac.plist
