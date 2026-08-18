@@ -390,7 +390,7 @@ def main() -> int:
     if not os.path.exists(FIXTURES):
         print("fixtures missing — run tools/gen-codec-fixtures.py first")
         return 2
-    fixtures = json.load(open(FIXTURES))["patterns"]
+    fixtures = json.load(open(FIXTURES, encoding="utf-8"))["patterns"]
 
     bad = 0
     bad += verify(fixtures)

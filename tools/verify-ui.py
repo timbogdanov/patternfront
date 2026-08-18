@@ -72,7 +72,7 @@ def main() -> int:
     if not os.path.exists(APP):
         print(f"missing {APP}")
         return 2
-    src = open(APP).read()
+    src = open(APP, encoding="utf-8").read()
     css = "".join(re.findall(r"<style>(.*?)</style>", src, re.S))
     js = "\n".join(re.findall(r"<script>(.*?)</script>", src, re.S))
 

@@ -58,7 +58,7 @@ def encode(w: int, h: int, scale: int, bits) -> str:
 
 
 def main() -> int:
-    src = open(APP).read()
+    src = open(APP, encoding="utf-8").read()
     js = "\n".join(re.findall(r"<script>(.*?)</script>", src, re.S))
     stamps = re.findall(r"\['([a-z]+)','([a-z0-9_-]+)','([A-Za-z0-9_-]+)'\]", js)
     if not stamps:

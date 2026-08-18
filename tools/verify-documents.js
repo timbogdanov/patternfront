@@ -44,9 +44,15 @@ require.cache['electron-stub'] = { id: 'electron-stub', filename: 'electron-stub
 const docs = require('../electron/documents.js');
 
 let failures = 0;
+let skipped = 0;
 const chk = (name, ok, detail) => {
   console.log(`  [${ok ? 'PASS' : 'FAIL'}] ${name}${detail ? '  ' + detail : ''}`);
   if (!ok) failures++;
+};
+/** A check that cannot run here. Reported loudly so it never reads as a pass. */
+const skip = (name, why) => {
+  console.log(`  [SKIP] ${name}  ${why}`);
+  skipped++;
 };
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'pf-doc-'));
@@ -110,17 +116,26 @@ const VALID = JSON.stringify({
 
   // If the rename cannot happen, the previous contents must survive intact —
   // this is the whole reason for writing to a temp file first.
-  const readonlyDir = p('ro');
-  fs.mkdirSync(readonlyDir);
-  const guarded = path.join(readonlyDir, 'keep.patternfront');
-  fs.writeFileSync(guarded, VALID);
-  fs.chmodSync(readonlyDir, 0o500);
-  threw = null;
-  try { await docs.writeAtomic(guarded, 'REPLACED'); } catch (e) { threw = e.code; }
-  chk('a failed write raises', threw !== null, String(threw));
-  chk('and the previous version is untouched',
-      fs.readFileSync(guarded, 'utf8') === VALID);
-  fs.chmodSync(readonlyDir, 0o700);
+  //
+  // Windows does not enforce directory permissions the way chmod implies — a
+  // 0o500 directory stays writable there, so the rename cannot be made to fail
+  // this way. Skip rather than assert something untrue of the platform.
+  if (process.platform === 'win32') {
+    skip('a failed write raises', 'needs POSIX directory permissions');
+    skip('and the previous version is untouched', 'needs POSIX directory permissions');
+  } else {
+    const readonlyDir = p('ro');
+    fs.mkdirSync(readonlyDir);
+    const guarded = path.join(readonlyDir, 'keep.patternfront');
+    fs.writeFileSync(guarded, VALID);
+    fs.chmodSync(readonlyDir, 0o500);
+    threw = null;
+    try { await docs.writeAtomic(guarded, 'REPLACED'); } catch (e) { threw = e.code; }
+    chk('a failed write raises', threw !== null, String(threw));
+    chk('and the previous version is untouched',
+        fs.readFileSync(guarded, 'utf8') === VALID);
+    fs.chmodSync(readonlyDir, 0o700);
+  }
 
   console.log('\n=== recent documents ===');
   let changes = 0;
@@ -140,6 +155,7 @@ const VALID = JSON.stringify({
   fs.rmSync(tmp, { recursive: true, force: true });
 
   console.log();
+  if (skipped) console.log(`${skipped} check(s) skipped on this platform`);
   if (failures) {
     console.log(`*** ${failures} FAILURE(S) ***`);
     process.exit(1);

@@ -76,7 +76,7 @@ def main() -> int:
     if not os.path.exists(PROMPT):
         print(f"missing {PROMPT}")
         return 2
-    text = open(PROMPT).read()
+    text = open(PROMPT, encoding="utf-8").read()
     blocks, templates = extract_json_blocks(text)
 
     # The two format-template blocks at the top use "..." placeholders and are
