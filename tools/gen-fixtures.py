@@ -94,7 +94,7 @@ def main() -> int:
         print("Pass the OpenFrontIO checkout path as the first argument.")
         return 2
 
-    raw = json.load(open(src))["patterns"]
+    raw = json.load(open(src, encoding="utf-8"))["patterns"]
     patterns, problems = [], []
 
     for b64, meta in sorted(raw.items(), key=lambda kv: kv[1].get("name", "")):
@@ -148,7 +148,7 @@ def main() -> int:
     }
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    with open(OUT, "w") as fh:
+    with open(OUT, "w", encoding="utf-8") as fh:
         json.dump(doc, fh, indent=2)
         fh.write("\n")
 

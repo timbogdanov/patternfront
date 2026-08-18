@@ -1211,7 +1211,7 @@ def import_openfront(checkout):
         print(f"\n--openfront: no cosmetics.json at {src}")
         return []
 
-    raw = json.load(open(src)).get("patterns", {})
+    raw = json.load(open(src, encoding="utf-8")).get("patterns", {})
     out = []
     for data, meta in sorted(raw.items(), key=lambda kv: kv[1].get("name", "")):
         name = meta.get("name") if isinstance(meta, dict) else None

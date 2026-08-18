@@ -13,8 +13,16 @@ concurrency:
 
 jobs:
   verify:
-    name: Verification suites
-    runs-on: ubuntu-latest
+    # The suite runs on Windows too. It only ever ran on Linux before, which is
+    # how three portability bugs reached a release build: Python defaulting to
+    # cp1252 when reading UTF-8 sources, and a test that provokes a write
+    # failure with chmod, which Windows does not honour on directories.
+    name: Verification suites (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -30,22 +38,31 @@ jobs:
       # OpenFront cross-check has no checkout here and skips loudly; that is
       # reported, never silently treated as a pass.
       - name: Run every check
+        shell: bash
         run: ./tools/verify-all.sh
 
       - name: Fixtures are in sync with the generator
+        shell: bash
         run: |
           python3 tools/gen-codec-fixtures.py
           git diff --exit-code tests/fixtures/codec.json \
             || (echo "::error::tests/fixtures/codec.json is stale — run python3 tools/gen-codec-fixtures.py"; exit 1)
 
       - name: Stamps are in sync with the generator
+        shell: bash
+        # Writes into the workspace, not /tmp — that path does not exist for
+        # Windows Python. PYTHONIOENCODING keeps the redirect utf-8 there too,
+        # where stdout would otherwise default to cp1252.
+        env:
+          PYTHONIOENCODING: utf-8
         run: |
-          python3 tools/gen-stamps.py --emit > /tmp/stamps.txt
+          python3 tools/gen-stamps.py --emit > stamps-generated.txt
           python3 - <<'PY'
           import re, sys
-          gen = re.search(r"const STAMPS=\[\n(.*?)\n\];", open("/tmp/stamps.txt").read(), re.S)
+          gen = re.search(r"const STAMPS=\[\n(.*?)\n\];",
+                          open("stamps-generated.txt", encoding="utf-8").read(), re.S)
           app = re.search(r"const STAMPS=\[\n(.*?)\n\];",
-                          open("app/patternfront.html").read(), re.S)
+                          open("app/patternfront.html", encoding="utf-8").read(), re.S)
           if not gen or not app:
               sys.exit("could not find a STAMPS block")
           g = [l.strip() for l in gen.group(1).splitlines() if l.strip()]

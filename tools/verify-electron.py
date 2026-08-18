@@ -30,7 +30,7 @@ def chk(name: str, ok: bool, detail: str = "") -> None:
 
 def read(name: str) -> str:
     p = os.path.join(E, name)
-    return open(p).read() if os.path.exists(p) else ""
+    return open(p, encoding="utf-8").read() if os.path.exists(p) else ""
 
 
 def main() -> int:
@@ -135,7 +135,7 @@ def main() -> int:
 
 def read_root(name: str) -> str:
     p = os.path.join(ROOT, name)
-    return open(p).read() if os.path.exists(p) else ""
+    return open(p, encoding="utf-8").read() if os.path.exists(p) else ""
 
 
 if __name__ == "__main__":

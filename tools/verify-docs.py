@@ -74,7 +74,7 @@ def main():
         print("Pass the OpenFrontIO checkout path as the first argument.")
         return 2
 
-    patterns = json.load(open(cosmetics))["patterns"]
+    patterns = json.load(open(cosmetics, encoding="utf-8"))["patterns"]
 
     print("=== Format boundary claims (doc 01 §2) ===")
     bits = 129 * 65
@@ -109,7 +109,7 @@ def main():
           [(by[3] >> i) & 1 for i in range(4)] == [1, 0, 1, 0])
 
     print("\n=== Fixture table in doc 01 matches reality ===")
-    doc = open(os.path.join(DOCS, "01-pattern-format.md")).read()
+    doc = open(os.path.join(DOCS, "01-pattern-format.md"), encoding="utf-8").read()
     rows = re.findall(
         r"^\| *\d+ \| `([^`]+)` \| `([^`]+)` \| (\d+)×(\d+) \| (\d+) \| (\d+) \|",
         doc, re.M)
@@ -160,7 +160,7 @@ def main():
     print("\n=== Placeholder scan ===")
     stale = re.compile(r"\b(TBD|TODO|FIXME|XXX)\b")
     hits = [f for f in sorted(os.listdir(DOCS))
-            if f.endswith(".md") and stale.search(open(os.path.join(DOCS, f)).read())]
+            if f.endswith(".md") and stale.search(open(os.path.join(DOCS, f), encoding="utf-8").read())]
     check("no placeholders in any doc", not hits, str(hits))
 
     print()

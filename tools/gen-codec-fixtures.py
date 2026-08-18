@@ -177,7 +177,7 @@ def main() -> int:
             "count": len(fixtures),
             "patterns": fixtures,
         }
-        with open(OUT, "w") as fh:
+        with open(OUT, "w", encoding="utf-8") as fh:
             json.dump(payload, fh, indent=1)
             fh.write("\n")
         print(f"wrote {OUT}  ({os.path.getsize(OUT):,} bytes)")
