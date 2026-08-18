@@ -1,9 +1,10 @@
 # PatternFront
 
 A 1-bit pattern editor for [OpenFront.io](https://openfront.io) territory patterns — the small
-tiling bitmaps that mark out a player's territory. Runs in any browser, from a single file.
+tiling bitmaps that mark out a player's territory. Desktop app for macOS and Windows, and the
+same editor runs in a browser.
 
-![Stamps](docs/assets/stamps.png)
+![PatternFront](docs/assets/desktop.png)
 
 Patterns are two colours and at most 129×65 pixels, which sounds trivial and is not: they tile
 against absolute world coordinates, so a seam that looks fine in the editor can read as a defect
@@ -21,36 +22,60 @@ exports the exact `patternData` string the game takes.
 - **Live tiled preview** — see the seams before the game does
 - **Export** — PNG, sprite sheet, animated GIF, and OpenFront `patternData` (or JSON for `cosmetics.json`)
 
-## Run it
+On the desktop it is a real application, not a wrapped web page: native menus, `.patternfront`
+documents with Open/Save/Save As, double-click to open from Finder or Explorer, recent files,
+exports through native Save dialogs, remembered window position, and an unsaved-changes prompt
+that will not let you lose work.
+
+## Install
+
+Grab a build from [Releases](https://github.com/timbogdanov/patternfront/releases).
+
+**These builds are unsigned.** Paying Apple and Microsoft for certificates is not something this
+project does yet, so both systems will warn you the first time:
+
+- **macOS** — right-click the app → **Open** → **Open**. Once, then never again.
+- **Windows** — SmartScreen shows "Windows protected your PC" → **More info** → **Run anyway**.
+
+If that is not acceptable to you, build it yourself — it takes one command, below.
+
+> **Known issue building on recent macOS.** `npm run dist` can fail at the DMG step with
+> `hdiutil: convert failed - Resource temporarily unavailable`, from the `dmgbuild` copy that
+> electron-builder vendors. The `.zip` targets are unaffected, and the app inside them is
+> identical — `npm run dist -- --mac zip` gets you a working build. Unzip and drag to
+> Applications.
+
+## Run from source
+
+Needs Node 20+ and Python 3.10+ (Python is only for the generators and the verification suite).
 
 ```sh
-open app/patternfront.html      # macOS
-xdg-open app/patternfront.html  # Linux
+npm install
+npm start          # run the desktop app
+npm run verify     # run every check
+npm run dist       # build installers for the current platform
 ```
 
-That is the whole thing. One self-contained file — no dependencies, no bundler, no build step and
-no network access. Double-click it and it works.
-
-A desktop build for macOS and Windows is [in progress](../../pulls).
-
-Running the checks needs Node 20+ and Python 3.10+:
-
-```sh
-./tools/verify-all.sh
-```
+There is no build step for the editor itself. `app/patternfront.html` is one self-contained file
+with no dependencies, no bundler and no network access — open it directly in a browser and it
+works. The desktop build loads that same file; nothing is forked.
 
 ## How it is put together
 
 ```
 app/patternfront.html   the entire editor — markup, styles, logic, stamps
+electron/               main process, preload bridge, menus, document handling
 tools/                  generators and the verification suite
 docs/                   design documents
 tests/fixtures/         the codec corpus
 ```
 
+The renderer feature-detects `window.pfNative`. Without it — in a browser — every native path is
+skipped and the file behaves exactly as it always did. That is asserted by tests, not assumed.
+
 ## Verification
 
-`./tools/verify-all.sh` runs nine suites. They exist because this project kept getting things subtly
+`npm run verify` runs nine suites. They exist because this project kept getting things subtly
 wrong in ways that only mechanical checking caught — a seam metric that flagged correct patterns,
 a modulo that goes negative in JavaScript but not Python, an unguarded `localStorage` read that
 killed the app before first paint in any sandboxed frame.
@@ -63,7 +88,8 @@ killed the app before first paint in any sandboxed frame.
 | map-scale sampling | `sampleAt` matches an independent oracle, including at negative world coordinates |
 | UI design rules | no shadows, no gradients, no radius above 2px, no light chrome — the design system, enforced |
 | stamp library | every stamp is a valid pattern, uniquely named, and legible at 1× |
-| editor behaviour | ~70 assertions running the editor's real functions in a sandbox |
+| editor behaviour | ~80 assertions running the editor's real functions in a sandbox |
+| desktop smoke test | Electron actually launches and the editor comes up, headless |
 | docs vs OpenFront | *optional* — cross-checks the format docs against a local game checkout |
 
 The last one needs an OpenFront clone and **skips loudly** without one. It never silently passes.
@@ -77,7 +103,7 @@ this repo's corpus hits exactly.
 
 ## Status, honestly
 
-The editor is real and works. The AI features described in
+The editor and the desktop app are real and work. The AI features described in
 [`docs/03`](docs/03-ai-integration.md), [`04`](docs/04-image-to-pattern.md) and
 [`07`](docs/07-cost-and-abuse.md) — text-to-pattern, AI region editing, hosted credits — are
 **designed and not built**. The image importer in the app today is ordinary quantisation and

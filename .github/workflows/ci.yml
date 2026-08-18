@@ -60,3 +60,88 @@ jobs:
               sys.exit(1)
           print(f"{len(a)} stamps match")
           PY
+
+  smoke:
+    name: Desktop app launches
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Electron needs a display and the usual Chromium shared libraries.
+      # xvfb-run gives it a virtual one; without this the app cannot start at
+      # all and "it built" would be the only thing CI ever proved.
+      - name: Install a virtual display
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgtk-3-0 libnss3 libasound2t64 \
+            libgbm1 libxss1 libxtst6
+
+      # Chromium's SUID sandbox helper has to be owned by root with the setuid
+      # bit; npm cannot install it that way. The alternative is --no-sandbox,
+      # which would mean the smoke test exercises a different configuration
+      # from the one users actually run — so fix the permissions instead.
+      #
+      # The binary is fetched lazily rather than during `npm ci`, so run the
+      # package's own downloader first. Not `npx electron --version` — that
+      # launches the binary, which trips the very sandbox error being fixed.
+      - name: Let Chromium use its sandbox
+        run: |
+          node node_modules/electron/install.js
+          sudo chown root:root node_modules/electron/dist/chrome-sandbox
+          sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
+          ls -l node_modules/electron/dist/chrome-sandbox
+
+      - name: Launch the app and assert the editor came up
+        run: xvfb-run --auto-servernum npm run smoke
+
+      - name: Capture the window
+        run: xvfb-run --auto-servernum npx electron . --shot /tmp/patternfront.png
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshot
+          path: /tmp/patternfront.png
+
+  package:
+    name: Package (${{ matrix.os }})
+    # Packaging is slow, so it only runs once the cheap checks are green.
+    needs: [verify, smoke]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Unsigned on purpose — see README. CSC_IDENTITY_AUTO_DISCOVERY=false
+      # stops electron-builder picking up a stray keychain identity on macOS
+      # runners and producing builds that are signed with something arbitrary.
+      - name: Build installers
+        run: npm run dist
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+          GH_TOKEN: ""
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.os }}
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/*.exe
+          if-no-files-found: error
