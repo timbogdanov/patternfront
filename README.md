@@ -34,7 +34,21 @@ Grab a build from [Releases](https://github.com/timbogdanov/patternfront/release
 **These builds are unsigned.** Paying Apple and Microsoft for certificates is not something this
 project does yet, so both systems will warn you the first time:
 
-- **macOS** — right-click the app → **Open** → **Open**. Once, then never again.
+- **macOS** — drag **PatternFront** to Applications first, then right-click it there → **Open**
+  → **Open**. Once, then never again.
+
+  Open it from the mounted disk image instead and macOS runs it *translocated*, from a random
+  read-only path. It works, but it is not where you think it is, and a second copy left in
+  Downloads gets named "PatternFront 2" — which is Finder numbering a duplicate, not a second app.
+
+  If macOS says the app **is damaged and you should eject the disk image**, that build predates
+  v0.1.1. Its signature did not match its contents, and there is no click-through past that
+  message — take a newer build, or clear the flag by hand:
+
+  ```
+  xattr -dr com.apple.quarantine /Applications/PatternFront.app
+  ```
+
 - **Windows** — SmartScreen shows "Windows protected your PC" → **More info** → **Run anyway**.
 
 If that is not acceptable to you, build it yourself — it takes one command, below.

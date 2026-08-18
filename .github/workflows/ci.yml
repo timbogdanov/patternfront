@@ -154,6 +154,25 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: false
           GH_TOKEN: ""
 
+
+      # A bundle whose signature no longer matches its contents runs fine here,
+      # but macOS reports it as "damaged" once it has been downloaded and
+      # carries com.apple.quarantine — and there is no way for a user past that.
+      # The quarantine flag is what makes it visible, so CI cannot reproduce the
+      # symptom; assert the seal itself instead.
+      - name: The macOS bundle is sealed
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          shopt -s nullglob
+          found=0
+          for app in dist/mac*/PatternFront.app; do
+            found=1
+            echo "verifying $app"
+            codesign --verify --deep --strict --verbose=2 "$app"
+          done
+          [ "$found" = 1 ] || { echo "::error::no packaged .app found to verify"; exit 1; }
+
       - uses: actions/upload-artifact@v4
         with:
           name: installers-${{ matrix.os }}
