@@ -1,7 +1,7 @@
 {
   "name": "patternfront",
   "productName": "PatternFront",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A 1-bit pattern editor for OpenFront territory patterns — desktop app for macOS and Windows.",
   "keywords": ["pixel-art", "openfront", "pattern-editor", "1-bit", "electron"],
   "homepage": "https://github.com/timbogdanov/patternfront#readme",
