@@ -36,6 +36,8 @@ run() {
 
 run "codec corpus"                 python3 tools/gen-codec-fixtures.py --check
 run "editor codec vs corpus"       node    tools/verify-codec.js
+run "sampler oracle"               python3 tools/gen-sampler-fixtures.py --check
+run "editor sampler vs oracle"     node    tools/verify-sampler.js
 run "DSL prototype + seam metric"  python3 tools/dsl_demo.py
 run "router prompt examples"       python3 tools/verify-prompt.py
 run "map-scale sampling"           python3 tools/preview_prototype.py

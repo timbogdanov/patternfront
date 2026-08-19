@@ -442,6 +442,7 @@ input[type=color]{width:100%;height:1.8rem;background:var(--well);
         <div class="pvbox grow"><canvas id="pvC"></canvas></div>
         <div class="pvbar">
           <button class="b" id="pvTile" title="Repeat 3×3 to check the seams">Tile</button>
+          <button class="b" id="pvMap" title="Show it on a territory, at map scale · drag to move it">Map</button>
           <button class="b" id="pvFit" title="Fit to the panel">Fit</button>
           <span class="num" id="pvZ" style="min-width:3rem">fit</span>
           <div class="sp"></div>
@@ -704,6 +705,9 @@ let uiScale=+(store.get('pf.ui')||1.5);
 const Z=()=>zoom*uiScale;
 let symX=false,symY=false,wrapDraw=false,onion=0;
 let sel=null,clipboard=null,pvScale=0,pvTile=true;
+// Map view: is it on, and where the territory sits in world coordinates.
+// The offset is deliberately allowed to go negative — see floorMod.
+let pvMap=false,pvOX=0,pvOY=0;
 // `fg` is the active colour: what the pencil, shapes and fill use, and what
 // the picker edits. `bg` is the other one (right-click, and what Grab backfills
 // with). Clicking a chip makes it active. There is deliberately no separate
@@ -880,8 +884,47 @@ function pvFitScale(){
   const w=Math.max(1,box.clientWidth-pad), h=Math.max(1,box.clientHeight-pad);
   return Math.max(1,Math.floor(Math.min(w/(doc.w*n), h/(doc.h*n))));}
 function pvEff(){return pvScale>0?pvScale:pvFitScale();}
+/* A blobby pseudo-territory, so the pattern is judged inside a shape rather than
+   as a rectangle. Ported from tools/preview_prototype.py. */
+function territoryMask(w,h){
+  const cx=w/2,cy=h/2,mask=new Uint8Array(w*h);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const dx=(x-cx)/(w*0.42),dy=(y-cy)/(h*0.42),ang=Math.atan2(dy,dx);
+    const wob=0.82+0.20*Math.sin(ang*3+0.7)+0.10*Math.sin(ang*7-1.2);
+    mask[y*w+x]=Math.hypot(dx,dy)<wob?1:0;}
+  return mask;}
+/* What a player sees. The pattern is laid out in ABSOLUTE world coordinates, so
+   the territory's position decides which part of the pattern lands on it — which
+   is exactly what the flat tile view cannot show, and why dragging this matters.
+   Sampling goes through ofPrimaryAt, held to tests/fixtures/sampler.json. */
+const MAP_TILES=120;
+function drawMapPreview(){
+  const box=pvC.parentElement;
+  const pad=2*parseFloat(getComputedStyle(box).paddingLeft||'0');
+  const bw=Math.max(1,box.clientWidth-pad),bh=Math.max(1,box.clientHeight-pad);
+  const px=Math.max(1,Math.floor(bw/MAP_TILES));
+  const cols=Math.floor(bw/px),rows=Math.max(1,Math.floor(bh/px));
+  pvC.width=cols*px;pvC.height=rows*px;
+
+  const scale=+($('ofScale')||{value:0}).value;
+  const pat={w:doc.w,h:doc.h,scale,bits:to1bit()};
+  const prim=doc.palette[1]||{r:255,g:255,b:255,a:255};
+  const sec=doc.palette[2]||{r:0,g:0,b:0,a:255};
+  const mask=territoryMask(cols,rows);
+  const im=new ImageData(cols,rows);
+  for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+    const o=(y*cols+x)*4;
+    if(!mask[y*cols+x]){im.data[o]=38;im.data[o+1]=41;im.data[o+2]=48;im.data[o+3]=255;continue;}
+    const c=ofPrimaryAt(pat,pvOX+x,pvOY+y)?prim:sec;
+    im.data[o]=c.r;im.data[o+1]=c.g;im.data[o+2]=c.b;im.data[o+3]=255;}
+  const t=document.createElement('canvas');t.width=cols;t.height=rows;
+  t.getContext('2d').putImageData(im,0,0);
+  pvG.imageSmoothingEnabled=false;pvG.clearRect(0,0,pvC.width,pvC.height);
+  pvG.drawImage(t,0,0,pvC.width,pvC.height);
+  const z=$('pvZ'); if(z) z.textContent=(1<<scale)+'× · '+pvOX+','+pvOY;}
 function drawPreview(){
   if(!pvBuf) return;
+  if(pvMap) return drawMapPreview();
   const n=pvTile?3:1,s=pvEff();
   const zEl=$('pvZ'); if(zEl) zEl.textContent=pvScale>0?s+'×':'fit '+s+'×';
   pvC.width=doc.w*n*s;pvC.height=doc.h*n*s;
@@ -895,6 +938,26 @@ function drawPreview(){
     pvG.drawImage(t,x*doc.w*s,y*doc.h*s,doc.w*s,doc.h*s);}
 $('pvTile').onclick=()=>{pvTile=!pvTile;
   $('pvTile').setAttribute('aria-pressed',String(pvTile));drawPreview();};
+$('pvMap').onclick=()=>{pvMap=!pvMap;
+  $('pvMap').setAttribute('aria-pressed',String(pvMap));
+  $('pvTile').disabled=pvMap;$('pvFit').disabled=pvMap;drawPreview();};
+// Drag the territory across the map. This is the control the flat view has no
+// equivalent of: pan left and the world coordinates go negative, which is where
+// a remainder-based sampler would read before the start of the pattern.
+pvC.addEventListener('pointerdown',e=>{
+  if(!pvMap) return;
+  pvC.setPointerCapture(e.pointerId);
+  const sx=e.clientX,sy=e.clientY,ox=pvOX,oy=pvOY;
+  const per=Math.max(1,pvC.clientWidth/MAP_TILES);
+  const move=ev=>{
+    pvOX=ox-Math.round((ev.clientX-sx)/per);
+    pvOY=oy-Math.round((ev.clientY-sy)/per);
+    drawMapPreview();};
+  const up=()=>{pvC.removeEventListener('pointermove',move);
+    pvC.removeEventListener('pointerup',up);pvC.removeEventListener('pointercancel',up);};
+  pvC.addEventListener('pointermove',move);
+  pvC.addEventListener('pointerup',up);
+  pvC.addEventListener('pointercancel',up);});
 $('pvFit').onclick=()=>{pvScale=0;drawPreview();};
 pvC.parentElement.addEventListener('wheel',e=>{
   e.preventDefault();
@@ -1741,6 +1804,21 @@ function decodeOF(str){
   for(let i=0;i<w*h;i++) bits[i]=(by[3+(i>>3)]>>(i&7))&1;
   return {w,h,scale,bits};
 }
+/* Modulo that is never negative. JS `%` is a REMAINDER whose sign follows the
+   dividend: -1 % 4 is -1, where a floor modulo gives 3. OpenFront never meets
+   this because its own tile coordinates start at 0, but the map preview lets the
+   territory be panned left, and a bare `%` there would index before the start of
+   the array and render garbage at the origin. Every sampler goes through this. */
+const floorMod=(a,n)=>((a%n)+n)%n;
+/* Is the world tile at (wx,wy) the primary colour? THE sampling rule — the one
+   place that decides what a player actually sees. `scale` magnifies by 2^scale,
+   so a block of 2^scale world tiles shares one pattern pixel, and the pattern is
+   laid out in ABSOLUTE world coordinates: move a territory across the map and
+   the pattern's phase moves with it. Held to tests/fixtures/sampler.json. */
+function ofPrimaryAt(d,wx,wy){
+  const px=floorMod(wx>>d.scale,d.w),py=floorMod(wy>>d.scale,d.h);
+  return d.bits[py*d.w+px]===0;
+}
 // Flatten the visible layers to palette indices (top layer wins).
 function flatIndex(fi){
   const out=new Uint8Array(npx());
@@ -1769,7 +1847,10 @@ function to1bit(){
   return bits;}
 function refreshOF(){
   const scale=+$('ofScale').value;
-  $('ofScaleO').textContent=scale+'×';
+  // The readout is the magnification, not the slider position. scale is an
+  // exponent — one pixel covers 2^scale tiles — so slider 3 is 8x, and showing
+  // "3x" contradicted the sentence directly beneath it.
+  $('ofScaleO').textContent=(1<<scale)+'×';
   $('ofCover').textContent='One pixel covers '+(1<<scale)+'×'+(1<<scale)+
     ' map tiles. Repeats every '+(doc.w<<scale)+'×'+(doc.h<<scale)+'.';
   if(doc.w>OF_MAXW||doc.h>OF_MAXH){

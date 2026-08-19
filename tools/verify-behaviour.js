@@ -400,6 +400,7 @@ function previewTests() {
       `var doc={w:${W},h:${H},palette:[]},buf=new Uint8Array(${W * H * 4});`,
       `var pvBuf=new Uint8Array(${W * H * 4}),aFrame=0,lift=null;`,
       'function composite(){}',
+      'var pvMap=false;',          // the zoom ladder is the flat view's concern
       `var pvScale=${pvScale},pvTile=${pvTile};`,
       grabFunction('pvEff'), grabFunction('drawPreview'), 'drawPreview();',
     ].join('\n'));
