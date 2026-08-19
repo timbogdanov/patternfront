@@ -118,13 +118,23 @@ jobs:
       - name: Launch the app and assert the editor came up
         run: xvfb-run --auto-servernum npm run smoke
 
+      # The suite that would have caught a broken build before it shipped: real
+      # mouse input, the real save path, the real document round-trip.
+      - name: Drive the app end to end
+        run: xvfb-run --auto-servernum npm run e2e
+        env:
+          SCREENSHOT_DIR: /tmp/e2e-shots
+
       - name: Capture the window
         run: xvfb-run --auto-servernum npx electron . --shot /tmp/patternfront.png
 
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: screenshot
-          path: /tmp/patternfront.png
+          path: |
+            /tmp/patternfront.png
+            /tmp/e2e-shots
 
   package:
     name: Package (${{ matrix.os }})

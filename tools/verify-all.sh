@@ -47,6 +47,11 @@ run "editor behaviour"             node    tools/verify-behaviour.js
 run "desktop documents"            node    tools/verify-documents.js
 run "electron shell"               python3 tools/verify-electron.py
 
+# Drives the real window. Needs electron installed and a display, so it SKIPS on
+# a bare checkout or a headless box rather than failing; CI runs it under xvfb in
+# the smoke job, where it is a hard gate.
+run "end to end"                   node    tests/e2e/drive.mjs
+
 # Optional: only runs with a local OpenFront checkout.
 run "docs match OpenFront source"  python3 tools/verify-docs.py "$OPENFRONT"
 
