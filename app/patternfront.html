@@ -349,6 +349,7 @@ input[type=color]{width:100%;height:1.8rem;background:var(--well);
     <button class="b sq" id="zen" title="Hide the side panels  (Tab)">
       <svg viewBox="0 0 20 20"><path d="M3 4h14v12H3z"/><path d="M7 4v12M13 4v12"/></svg></button>
     <button class="b sq" id="helpBtn" title="Shortcuts  (?)">?</button>
+    <button class="b" id="dslBtn" title="Describe a pattern as a program">Program…</button>
     <button class="b" id="imgBtn">Image…</button>
     <button class="b go" id="expBtn">Export…</button>
   </div>
@@ -535,6 +536,20 @@ input[type=color]{width:100%;height:1.8rem;background:var(--well);
     <button class="b" id="iFrame">Add as frame</button>
     <button class="b" id="iLayer">Add as layer</button>
     <button class="b go" id="iReplace">Replace canvas</button></div>
+</div></div>
+
+<div class="ov" id="ovDsl" hidden><div class="sheet sm">
+  <div class="sh"><h2>Program</h2><button class="b" id="dslX">Close</button></div>
+  <div style="padding:8px;display:flex;flex-direction:column;gap:7px">
+    <span class="note">A pattern described rather than drawn. The canvas is sized to a
+      common multiple of every layer's period, so the result tiles seamlessly.</span>
+    <div class="r" id="dslPresets"></div>
+    <textarea id="dslSrc" spellcheck="false" rows="12" style="width:100%;resize:vertical;
+      background:var(--well);color:var(--text);border:0.1rem solid var(--edge-dim);
+      font:inherit;padding:0.4rem"></textarea>
+    <button class="b go" id="dslGo">Replace canvas</button>
+    <span class="note" id="dslStat"></span>
+  </div>
 </div></div>
 
 <div class="ov" id="ovExp" hidden><div class="sheet sm">
@@ -1609,6 +1624,64 @@ function fileToImage(f){
 const openOv=id=>{$(id).hidden=false;};
 const closeOv=id=>{$(id).hidden=true;};
 $('imgBtn').onclick=()=>openOv('ovImg');
+
+/* The program panel. Everything here runs against the same dslRender the
+   verification suite holds byte-for-byte against the Python oracle, so what is
+   rendered in the panel is what the fixtures cover. */
+const DSL_PRESETS={
+  Stripes:{canvas:{width:32,height:32,scale:1,autoSize:true},
+    layers:[{op:'set',shape:{type:'stripes',axis:'v',period:8,thickness:4}}],post:{}},
+  Diagonal:{canvas:{width:32,height:32,scale:1,autoSize:true},
+    layers:[{op:'set',shape:{type:'diagonal',dx:1,dy:1,period:8,thickness:3}}],post:{}},
+  Checker:{canvas:{width:32,height:32,scale:1,autoSize:true},
+    layers:[{op:'set',shape:{type:'checker',cellW:4,cellH:4}}],post:{}},
+  Plaid:{canvas:{width:32,height:32,scale:1,autoSize:true},
+    layers:[{op:'set',shape:{type:'stripes',axis:'v',period:8,thickness:3}},
+            {op:'xor',shape:{type:'stripes',axis:'h',period:6,thickness:2}}],post:{}},
+  Houndstooth:{canvas:{width:32,height:32,scale:1,autoSize:true},
+    layers:[{op:'set',shape:{type:'checker',cellW:4,cellH:4}},
+            {op:'xor',shape:{type:'diagonal',dx:1,dy:1,period:8,thickness:4}}],post:{}},
+};
+function dslShow(prog){$('dslSrc').value=JSON.stringify(prog,null,1);dslPreviewStat();}
+function dslPreviewStat(){
+  try{
+    const r=dslRender(JSON.parse($('dslSrc').value));
+    const ink=r.bits.reduce((a,b)=>a+b,0);
+    $('dslStat').innerHTML='<span style="color:var(--ok)">'+r.w+'×'+r.h+
+      ' · '+Math.round(100*ink/(r.w*r.h))+'% ink · scale '+(1<<r.scale)+'×</span>';
+  }catch(e){
+    $('dslStat').innerHTML='<span style="color:var(--danger)">'+e.message+'</span>';}
+}
+(()=>{const el=$('dslPresets');
+  for(const name of Object.keys(DSL_PRESETS)){
+    const b=document.createElement('button');b.className='b';b.textContent=name;
+    b.onclick=()=>dslShow(DSL_PRESETS[name]);el.appendChild(b);}})();
+$('dslBtn').onclick=()=>{
+  if(!$('dslSrc').value.trim()) dslShow(DSL_PRESETS.Diagonal);
+  openOv('ovDsl');dslPreviewStat();};
+$('dslX').onclick=()=>closeOv('ovDsl');
+$('ovDsl').addEventListener('pointerdown',e=>{if(e.target===$('ovDsl'))closeOv('ovDsl');});
+$('dslSrc').oninput=dslPreviewStat;
+$('dslGo').onclick=()=>{
+  let r;
+  try{ r=dslRender(JSON.parse($('dslSrc').value)); }
+  catch(e){ $('dslStat').innerHTML='<span style="color:var(--danger)">'+e.message+'</span>'; return; }
+  snap();
+  doc.w=r.w;doc.h=r.h;
+  // A program is one bit per pixel, which is the two-colour document exactly:
+  // slot 1 is the primary the format calls bit 0, slot 2 the secondary. Keep an
+  // existing duotone rather than resetting the user's colours.
+  if(doc.palette.length!==3)
+    doc.palette=[{r:0,g:0,b:0,a:0},{r:255,g:255,b:255,a:255},{r:0,g:0,b:0,a:255}];
+  doc.layers=[{name:'Program',visible:true,locked:false,opacity:1}];
+  const idx=new Uint8Array(r.w*r.h);
+  for(let i=0;i<idx.length;i++) idx[i]=r.bits[i]?2:1;
+  doc.frames=[{cels:[idx]}];
+  aLayer=0;aFrame=0;fg=2;bg=1;sel=null;
+  $('cw').value=doc.w;$('ch').value=doc.h;
+  const sl=$('ofScale'); if(sl){sl.value=r.scale;}
+  fullSync();commit();closeOv('ovDsl');
+  toast('Rendered '+r.w+'×'+r.h+' from the program');};
 $('imgX').onclick=()=>closeOv('ovImg');
 $('ovImg').addEventListener('pointerdown',e=>{if(e.target===$('ovImg'))closeOv('ovImg');});
 $('drop').onclick=()=>$('file').click();
@@ -1819,6 +1892,269 @@ function ofPrimaryAt(d,wx,wy){
   const px=floorMod(wx>>d.scale,d.w),py=floorMod(wy>>d.scale,d.h);
   return d.bits[py*d.w+px]===0;
 }
+
+/* ═══════ pattern DSL ═══════
+   A pattern described as a program rather than drawn: 15 primitives, each with a
+   declared period, composed with set/union/intersect/xor/subtract and sized so
+   the result tiles seamlessly by construction. Ported from tools/dsl_prototype.py,
+   which tools/dsl_demo.py proves tiles 28/28, and held byte-for-byte against
+   tests/fixtures/dsl.json.
+
+   Four things do NOT survive a literal translation from Python, and every one of
+   them is a silent wrong answer rather than an error:
+
+     * `round()` is banker's rounding — round(2.5) is 2, round(3.5) is 4 —
+       where Math.round always goes up. It decides wave offsets and canvas
+       sizing, so pyRound() below reproduces it.
+     * `%` is a floor modulo in Python and a remainder in JS. Any expression
+       that can go negative (a diagonal's x*dy - y*dx, a wave's y - offset)
+       needs floorMod.
+     * `//` floors; `|0` truncates toward zero. Same thing only for non-negative
+       operands, so Math.floor is used throughout rather than a bit trick.
+     * _hash2 multiplies by constants near 2^31. A plain `*` passes 2^53 and
+       silently drops low bits, so the mixing steps go through Math.imul.
+*/
+const DSL_MIN_W=2,DSL_MAX_W=129,DSL_MIN_H=2,DSL_MAX_H=65,DSL_MAX_LAYERS=4;
+
+/** Python's round(): halves go to the nearest even, not always up. */
+function pyRound(x){
+  const f=Math.floor(x),d=x-f;
+  if(d>0.5) return f+1;
+  if(d<0.5) return f;
+  return f%2===0?f:f+1;
+}
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=a%b;a=b;b=t;}return a||1;}
+function lcm(a,b){return Math.abs(a*b)/gcd(a,b);}
+
+/** Deterministic [0,1). Stable across languages, which is why noise fixtures work. */
+function hash2(x,y,seed){
+  let h=(Math.imul(x,374761393)+Math.imul(y,668265263)+Math.imul(seed,2246822519))>>>0;
+  h=Math.imul(h^(h>>>13),1274126177)>>>0;
+  return ((h^(h>>>16))>>>0)/4294967296;
+}
+
+/* Bitmap fonts for the `text` primitive: one integer per row, MSB-leftmost. */
+const F57={0:[14,17,19,21,25,17,14],1:[4,12,4,4,4,4,14],2:[14,17,1,2,4,8,31],3:[31,2,4,2,1,17,14],4:[2,6,10,18,31,2,2],5:[31,16,30,1,1,17,14],6:[6,8,16,30,17,17,14],7:[31,1,2,4,8,8,8],8:[14,17,17,14,17,17,14],9:[14,17,17,15,1,2,12],A:[14,17,17,31,17,17,17],B:[30,17,17,30,17,17,30],C:[14,17,16,16,16,17,14],D:[30,17,17,17,17,17,30],E:[31,16,16,30,16,16,31],F:[31,16,16,30,16,16,16],G:[14,17,16,23,17,17,15],H:[17,17,17,31,17,17,17],I:[14,4,4,4,4,4,14],J:[7,2,2,2,2,18,12],K:[17,18,20,24,20,18,17],L:[16,16,16,16,16,16,31],M:[17,27,21,21,17,17,17],N:[17,25,21,19,17,17,17],O:[14,17,17,17,17,17,14],P:[30,17,17,30,16,16,16],Q:[14,17,17,17,21,18,13],R:[30,17,17,30,20,18,17],S:[15,16,16,14,1,1,30],T:[31,4,4,4,4,4,4],U:[17,17,17,17,17,17,14],V:[17,17,17,17,17,10,4],W:[17,17,17,21,21,27,17],X:[17,17,10,4,10,17,17],Y:[17,17,10,4,4,4,4],Z:[31,1,2,4,8,16,31]};
+const F35={0:[7,5,5,5,7],1:[2,6,2,2,7],2:[6,1,2,4,7],3:[6,1,2,1,6],4:[5,5,7,1,1],5:[7,4,6,1,6],6:[3,4,7,5,7],7:[7,1,2,2,2],8:[7,5,7,5,7],9:[7,5,7,1,6],A:[2,5,7,5,5],B:[6,5,6,5,6],C:[3,4,4,4,3],D:[6,5,5,5,6],E:[7,4,6,4,7],F:[7,4,6,4,4],G:[3,4,5,5,3],H:[5,5,7,5,5],I:[7,2,2,2,7],J:[1,1,1,5,2],K:[5,5,6,5,5],L:[4,4,4,4,7],M:[5,7,7,5,5],N:[5,7,7,7,5],O:[2,5,5,5,2],P:[6,5,6,4,4],Q:[2,5,5,6,3],R:[6,5,6,5,5],S:[3,4,2,1,6],T:[7,2,2,2,2],U:[5,5,5,5,7],V:[5,5,5,5,2],W:[5,5,7,7,5],X:[5,5,2,5,5],Y:[5,5,2,2,2],Z:[7,1,2,4,7]};
+
+/* Each primitive returns {fn,px,py}: fn(x,y)->0|1, genuinely periodic with the
+   declared period. Those periods are what size_canvas uses to guarantee tiling. */
+const DSL_SHAPES={
+  solid:()=>({fn:()=>1,px:1,py:1}),
+  stripes:(p)=>{
+    const period=p.period??8,phase=p.phase??0;
+    const th=Math.min(p.thickness??4,period-1);
+    return p.axis==='h'
+      ?{fn:(x,y)=>floorMod(y+phase,period)<th?1:0,px:1,py:period}
+      :{fn:(x,y)=>floorMod(x+phase,period)<th?1:0,px:period,py:1};},
+  diagonal:(p)=>{
+    const dx=p.dx??1,dy=p.dy??1,period=p.period??8,phase=p.phase??0;
+    const th=Math.min(p.thickness??4,period-1);
+    return {fn:(x,y)=>floorMod(x*dy-y*dx+phase,period)<th?1:0,
+            px:period/gcd(floorMod(dy,period)||period,period),
+            py:period/gcd(floorMod(dx,period)||period,period)};},
+  checker:(p)=>{
+    const cw=p.cellW??4,ch=p.cellH??4,phase=p.phase??0;
+    return {fn:(x,y)=>(Math.floor(x/cw)+Math.floor(y/ch)+phase)%2?1:0,
+            px:2*cw,py:2*ch};},
+  grid:(p)=>{
+    const pX=p.periodX??8,pY=p.periodY??8,fX=p.phaseX??0,fY=p.phaseY??0;
+    const lX=Math.min(p.lineX??1,pX-1),lY=Math.min(p.lineY??1,pY-1);
+    return {fn:(x,y)=>(floorMod(x+fX,pX)<lX||floorMod(y+fY,pY)<lY)?1:0,px:pX,py:pY};},
+  dots:(p)=>{
+    const pX=p.periodX??8,pY=p.periodY??8,r=p.radius??2,shape=p.shape??'circle';
+    const rowOff=p.rowOffset??0,jit=p.jitter??0,seed=p.seed??0;
+    const py=floorMod(rowOff,pX)!==0?pY*2:pY;
+    return {fn:(x,y)=>{
+      const row=Math.floor(y/pY),ox=floorMod(row*rowOff,pX);
+      let cx=floorMod(x-ox,pX)-pX/2,cy=floorMod(y,pY)-pY/2;
+      if(jit){
+        cx+=(hash2(Math.floor(x/pX),row,seed)-0.5)*2*jit;
+        cy+=(hash2(row,Math.floor(x/pX),seed+1)-0.5)*2*jit;}
+      const d=shape==='square'?Math.max(Math.abs(cx),Math.abs(cy))
+             :shape==='diamond'?Math.abs(cx)+Math.abs(cy)
+             :Math.hypot(cx,cy);
+      return d<=r?1:0;},px:pX,py};},
+  brick:(p)=>{
+    const bw=p.brickW??8,bh=p.brickH??4,mortar=p.mortar??1,off=p.offset??4;
+    return {fn:(x,y)=>{
+      const row=Math.floor(y/bh),xs=floorMod(x+row*off,bw);
+      return (floorMod(y,bh)<mortar||xs<mortar)?1:0;},
+      px:lcm(bw,bw/gcd(floorMod(off,bw)||bw,bw)),py:2*bh};},
+  wave:(p)=>{
+    const axis=p.axis??'h',period=p.period??16,amp=p.amplitude??3,phase=p.phase??0;
+    const th=p.thickness??2,vp=Math.max(2*amp,th+1);
+    const fn=axis==='h'
+      ?(x,y)=>{const o=pyRound(amp*Math.sin(2*Math.PI*floorMod(x+phase,period)/period));
+               return floorMod(y-o,vp)<th?1:0;}
+      :(x,y)=>{const o=pyRound(amp*Math.sin(2*Math.PI*floorMod(y+phase,period)/period));
+               return floorMod(x-o,vp)<th?1:0;};
+    return axis==='h'?{fn,px:period,py:vp}:{fn,px:vp,py:period};},
+  zigzag:(p)=>{
+    const axis=p.axis??'h',period=p.period??8,amp=p.amplitude??3,th=p.thickness??2;
+    const vp=Math.max(2*amp,th+1),half=period/2;
+    const tri=t=>pyRound(amp*(2*Math.abs(floorMod(t,period)/half-1)-1));
+    const fn=axis==='h'?(x,y)=>floorMod(y-tri(x),vp)<th?1:0
+                       :(x,y)=>floorMod(x-tri(y),vp)<th?1:0;
+    return axis==='h'?{fn,px:period,py:vp}:{fn,px:vp,py:period};},
+  triangles:(p)=>{
+    const size=p.size??8,down=p.orientation==='down';
+    return {fn:(x,y)=>{
+      const u=floorMod(x,2*size);
+      let v=floorMod(y,size);
+      if(down) v=size-1-v;
+      const half=size-1-v;
+      return (u>=half&&u<2*size-half)?1:0;},px:2*size,py:size};},
+  rings:(p)=>{
+    const period=p.period??16,th=p.thickness??2,cx=p.cx??0,cy=p.cy??0;
+    return {fn:(x,y)=>{
+      const u=floorMod(x+cx,period)-period/2,v=floorMod(y+cy,period)-period/2;
+      const d=Math.trunc(Math.hypot(u,v));
+      return floorMod(d,th*2)<th?1:0;},px:period,py:period};},
+  halftone:(p)=>{
+    const period=p.period??8,angle=p.angle??0;
+    const level=Math.max(0,Math.min(1,p.level??0.5));
+    const r=Math.sqrt(level)*period*0.62;
+    return {fn:(x,y)=>{
+      const xs=angle===45
+        ?floorMod(x+floorMod(Math.floor(y/period),2)*Math.floor(period/2),period)
+        :floorMod(x,period);
+      const u=xs-period/2,v=floorMod(y,period)-period/2;
+      return Math.hypot(u,v)<=r?1:0;},px:period,py:period*(angle===45?2:1)};},
+  noise:(p,canvas)=>{
+    const [w,h]=canvas,density=p.density??0.5,seed=p.seed??0;
+    let grid=[];
+    for(let y=0;y<h;y++){const row=[];
+      for(let x=0;x<w;x++) row.push(hash2(x,y,seed)<density?1:0);
+      grid.push(row);}
+    if(p.blue){
+      // Void-and-cluster, cheaply: drop any point that already has a lit
+      // 4-neighbour toroidally, which breaks up clumps.
+      const out=[];for(let y=0;y<h;y++) out.push(new Array(w).fill(0));
+      for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+        if(!grid[y][x]) continue;
+        const near=[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>
+          out[floorMod(y+dy,h)][floorMod(x+dx,w)]);
+        if(!near) out[y][x]=1;}
+      grid=out;}
+    return {fn:(x,y)=>grid[floorMod(y,h)][floorMod(x,w)],px:w,py:h};},
+  text:(p)=>{
+    const font=p.font??'5x7',table=font==='5x7'?F57:F35;
+    const gwid=font==='5x7'?5:3,gh=font==='5x7'?7:5;
+    const tracking=p.tracking??1,leading=p.leading??2;
+    let chars=String(p.glyphs??'AB').toUpperCase().split('')
+      .filter(c=>Object.prototype.hasOwnProperty.call(table,c)).slice(0,8);
+    if(!chars.length) chars=['A'];
+    const total=chars.length*(gwid+tracking),vspan=gh+leading;
+    return {fn:(x,y)=>{
+      const v=floorMod(y,vspan);
+      if(v>=gh) return 0;                       // inside the leading gap
+      const u=floorMod(x,total),idx=Math.floor(u/(gwid+tracking)),col=u%(gwid+tracking);
+      if(col>=gwid||idx>=chars.length) return 0;
+      return (table[chars[idx]][v]>>(gwid-1-col))&1?1:0;},px:total,py:vspan};},
+  border:(p,canvas)=>{
+    const [w,h]=canvas,inset=p.inset??0,th=p.thickness??1;
+    return {fn:(x,y)=>{
+      const u=floorMod(x,w),v=floorMod(y,h);
+      const inner=u>=inset&&u<w-inset&&v>=inset&&v<h-inset;
+      const core=u>=inset+th&&u<w-inset-th&&v>=inset+th&&v<h-inset-th;
+      return (inner&&!core)?1:0;},px:w,py:h};},
+};
+// Their period is the canvas, not their own parameters, so they cannot drive sizing.
+const DSL_CANVAS_LOCKED=new Set(['noise','border']);
+
+/* Out-of-range values are clamped rather than rejected: a model that says
+   period 900 meant "very wide", and refusing the whole program helps nobody. */
+const DSL_RANGES={
+  period:[2,64],periodX:[2,64],periodY:[2,64],thickness:[1,63],
+  phase:[0,63],phaseX:[0,63],phaseY:[0,63],dx:[1,8],dy:[1,8],
+  cellW:[1,32],cellH:[1,32],lineX:[1,8],lineY:[1,8],radius:[0,16],
+  rowOffset:[0,63],jitter:[0,4],brickW:[2,64],brickH:[1,32],mortar:[1,4],
+  offset:[0,63],amplitude:[1,16],size:[2,32],cx:[0,63],cy:[0,63],
+  level:[0,1],density:[0,1],inset:[0,16],tracking:[0,3],leading:[0,8],
+};
+function dslValidateShape(raw){
+  if(!raw||typeof raw!=='object'||!raw.type) throw new Error("shape missing 'type'");
+  if(!DSL_SHAPES[raw.type]) throw new Error('unknown shape type '+JSON.stringify(raw.type));
+  const out={type:raw.type};
+  for(const k of Object.keys(raw)){
+    if(k==='type') continue;
+    const r=DSL_RANGES[k];
+    out[k]=r?Math.max(r[0],Math.min(r[1],raw[k])):raw[k];}
+  if('thickness' in out&&'period' in out) out.thickness=Math.min(out.thickness,out.period-1);
+  if('seed' in out) out.seed=out.seed>>>0;
+  if(raw.type==='text'){
+    const g=String(out.glyphs??'A').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);
+    out.glyphs=g||'A';}
+  return out;
+}
+function dslValidate(prog){
+  if(!prog||typeof prog!=='object') throw new Error('program must be an object');
+  const layers=prog.layers||[];
+  if(!layers.length) throw new Error('program has no layers');
+  if(layers.length>DSL_MAX_LAYERS)
+    throw new Error('too many layers ('+layers.length+' > '+DSL_MAX_LAYERS+')');
+  const clean={canvas:{...(prog.canvas||{})},
+    layers:layers.map(l=>({op:l.op||'union',shape:dslValidateShape(l.shape)})),
+    post:{...(prog.post||{})}};
+  clean.layers[0].op='set';                     // nothing to compose against yet
+  return clean;
+}
+
+/* The tiling guarantee: size the canvas to a common multiple of every layer's
+   period, so the edges meet. A period wider than the format can hold cannot
+   tile, and the canvas is capped instead — the seam is then real and reported. */
+function dslSize(program){
+  const c=program.canvas||{},wantW=c.width??16,wantH=c.height??16;
+  if(c.autoSize===false)
+    return [Math.max(DSL_MIN_W,Math.min(DSL_MAX_W,wantW)),
+            Math.max(DSL_MIN_H,Math.min(DSL_MAX_H,wantH))];
+  let px=1,py=1;
+  for(const layer of program.layers){
+    const s=layer.shape;
+    if(DSL_CANVAS_LOCKED.has(s.type)) continue;
+    const {px:sx,py:sy}=DSL_SHAPES[s.type](s,[wantW,wantH]);
+    px=lcm(px,Math.max(1,sx));py=lcm(py,Math.max(1,sy));}
+  const fit=(period,want,lo,hi)=>{
+    if(period>hi) return hi;
+    let size=period*Math.max(1,pyRound(want/period));
+    while(size>hi) size-=period;
+    while(size<lo) size+=period;
+    return size;};
+  return [fit(px,wantW,DSL_MIN_W,DSL_MAX_W),fit(py,wantH,DSL_MIN_H,DSL_MAX_H)];
+}
+
+/** Run a program. Returns {w,h,scale,bits} in the same shape decodeOF gives. */
+function dslRender(raw){
+  const program=dslValidate(raw);
+  let [w,h]=dslSize(program);
+  const scale=Math.max(0,Math.min(7,program.canvas?.scale??1));
+  let buf=new Uint8Array(w*h);
+  for(const layer of program.layers){
+    const {fn}=DSL_SHAPES[layer.shape.type](layer.shape,[w,h]);
+    const op=layer.op;
+    for(let y=0;y<h;y++){const base=y*w;
+      for(let x=0;x<w;x++){
+        const v=fn(x,y),i=base+x;
+        if(op==='set') buf[i]=v;
+        else if(op==='union') buf[i]|=v;
+        else if(op==='intersect') buf[i]&=v;
+        else if(op==='xor') buf[i]^=v;
+        else if(op==='subtract') buf[i]&=1-v;}}}
+  const post=program.post||{};
+  const remap=(nw,nh,pick)=>{const out=new Uint8Array(nw*nh);
+    for(let y=0;y<nh;y++)for(let x=0;x<nw;x++) out[y*nw+x]=pick(x,y);
+    return out;};
+  if(post.mirrorX) buf=remap(w,h,(x,y)=>buf[y*w+(w-1-x)]);
+  if(post.mirrorY) buf=remap(w,h,(x,y)=>buf[(h-1-y)*w+x]);
+  for(let r=0;r<floorMod(post.rotate90||0,4);r++){
+    const src=buf,sw=w,sh=h;
+    buf=remap(sh,sw,(x,y)=>src[(sh-1-x)*sw+y]);
+    const t=w;w=h;h=t;}
+  if(post.invert) for(let i=0;i<buf.length;i++) buf[i]=1-buf[i];
+  return {w,h,scale,bits:buf};
+}
+
 // Flatten the visible layers to palette indices (top layer wins).
 function flatIndex(fi){
   const out=new Uint8Array(npx());
