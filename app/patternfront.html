@@ -550,6 +550,23 @@ input[type=color]{width:100%;height:1.8rem;background:var(--well);
       font:inherit;padding:0.4rem"></textarea>
     <button class="b go" id="dslGo">Replace canvas</button>
     <span class="note" id="dslStat"></span>
+    <hr style="border:0;border-top:1px solid var(--void);margin:1px 0">
+    <div class="h" style="margin:0">Describe it instead</div>
+    <span class="note">Optional. Your key is stored in this browser and is sent only to
+      Anthropic, never to this project. The program it writes lands in the box above,
+      where you can read and edit it before rendering.</span>
+    <div class="r"><input id="aiKey" type="password" placeholder="Anthropic API key" class="wide"
+      autocomplete="off" spellcheck="false"
+      style="background:var(--well);color:var(--text);border:0.1rem solid var(--edge-dim);
+      font:inherit;padding:0 0.4rem">
+      <button class="b" id="aiSave" style="flex:0 0 auto">Save</button>
+      <button class="b" id="aiForget" style="flex:0 0 auto">Forget</button></div>
+    <div class="r" id="aiAsk" hidden><input id="aiWhat" class="wide"
+      placeholder="diagonal stripes with a thin gap"
+      style="background:var(--well);color:var(--text);border:0.1rem solid var(--edge-dim);
+      font:inherit;padding:0 0.4rem">
+      <button class="b go" id="aiGo" style="flex:0 0 auto">Write it</button></div>
+    <span class="note" id="aiStat"></span>
   </div>
 </div></div>
 
@@ -1682,6 +1699,139 @@ $('dslBtn').onclick=()=>{
 $('dslX').onclick=()=>closeOv('ovDsl');
 $('ovDsl').addEventListener('pointerdown',e=>{if(e.target===$('ovDsl'))closeOv('ovDsl');});
 $('dslSrc').oninput=dslPreviewStat;
+/* ═══════ writing a program with a model ═══════
+   The DSL is the contract. A model writes a program; the app validates and renders
+   it exactly as if it had been typed by hand, so nothing reaches the canvas that
+   the panel could not have produced on its own — and the user can read the program
+   before rendering it.
+
+   Structured outputs do the heavy lifting: output_config.format constrains the
+   reply to the schema below, so there is no prose to parse out and a malformed
+   program is a validation error rather than a parse failure. Note what the schema
+   CANNOT say — numeric bounds, string lengths and recursion are not supported —
+   so every range still goes through dslValidateShape's clamping, which is where
+   it belonged anyway.
+
+   Raw fetch rather than the Anthropic SDK: the renderer is one HTML file with no
+   bundler and no node_modules, which is the documented raw-HTTP case. */
+const AI_URL='https://api.anthropic.com/v1/messages';
+const AI_MODEL='claude-opus-5';
+const AI_KEY='pf.aikey';
+/* The schema is built from the DSL's own tables, so it cannot drift from the
+   renderer: a primitive or parameter added to DSL_SHAPES/DSL_RANGES appears here
+   automatically. Every parameter is optional — the model supplies what a shape
+   needs — but `type` is required, since without it there is no shape at all. */
+function aiSchema(){
+  const num={type:'number'},int={type:'integer'},bool={type:'boolean'},str={type:'string'};
+  const shapeProps={type:{type:'string',enum:Object.keys(DSL_SHAPES)},
+    axis:{type:'string',enum:['h','v']},
+    orientation:{type:'string',enum:['up','down']},
+    shape:{type:'string',enum:['circle','square','diamond']},
+    font:{type:'string',enum:['5x7','3x5']},
+    glyphs:str,seed:int,blue:bool,angle:int};
+  for(const k of Object.keys(DSL_RANGES))
+    shapeProps[k]=(k==='level'||k==='density')?num:int;
+  return {type:'object',additionalProperties:false,
+    required:['canvas','layers','post'],
+    properties:{
+      canvas:{type:'object',additionalProperties:false,
+        required:['width','height','scale','autoSize'],
+        properties:{width:int,height:int,scale:int,autoSize:bool}},
+      layers:{type:'array',items:{type:'object',additionalProperties:false,
+        required:['op','shape'],
+        properties:{op:{type:'string',enum:['set','union','intersect','xor','subtract']},
+          shape:{type:'object',additionalProperties:false,required:['type'],
+            properties:shapeProps}}}},
+      post:{type:'object',additionalProperties:false,
+        required:['mirrorX','mirrorY','rotate90','invert'],
+        properties:{mirrorX:bool,mirrorY:bool,rotate90:int,invert:bool}}}};
+}
+/* Built from the same tables, for the same reason. */
+function aiSystem(){
+  const ranges=Object.entries(DSL_RANGES)
+    .map(([k,[lo,hi]])=>k+' '+lo+'-'+hi).join(', ');
+  return [
+    'You write programs for a 1-bit tiling pattern renderer used to make OpenFront',
+    'territory patterns. Answer only with a program matching the schema.',
+    '',
+    'Primitives: '+Object.keys(DSL_SHAPES).join(', ')+'.',
+    'Parameter ranges: '+ranges+'.',
+    '',
+    'Layers compose in order. The first layer is always "set"; later layers use',
+    'union, intersect, xor or subtract. Give each shape only the parameters that',
+    'primitive takes.',
+    '',
+    'Leave canvas.autoSize true unless the user asks for an exact size: the canvas',
+    'is then sized to a common multiple of every layer\'s period, which is what',
+    'makes the result tile seamlessly. Canvas limits are '+DSL_MIN_W+'-'+DSL_MAX_W+
+      ' wide and '+DSL_MIN_H+'-'+DSL_MAX_H+' tall; scale 0-7 magnifies by 2^scale.',
+    'A good default canvas is 32x32 at scale 1.',
+  ].join('\n');
+}
+const aiKey=()=>{try{return store.get(AI_KEY)||'';}catch{return '';}};
+function aiSync(){
+  const has=!!aiKey();
+  $('aiAsk').hidden=!has;
+  $('aiForget').disabled=!has;
+}
+function aiSay(msg,ok){
+  $('aiStat').innerHTML='<span style="color:var('+(ok?'--ok':'--danger')+')">'+msg+'</span>';
+}
+$('aiSave').onclick=()=>{
+  const v=$('aiKey').value.trim();
+  if(!v){aiSay('Paste a key first',false);return;}
+  store.set(AI_KEY,v);$('aiKey').value='';aiSync();
+  aiSay('Key saved in this browser',true);};
+$('aiForget').onclick=()=>{
+  store.set(AI_KEY,'');$('aiKey').value='';aiSync();aiSay('Key forgotten',true);};
+/* Separated from the button so it can be tested against a stubbed fetch — no test
+   in this repo ever needs a key or a network. */
+async function aiWrite(desc,fetchImpl){
+  const key=aiKey();
+  if(!key) throw new Error('No API key set');
+  if(!desc.trim()) throw new Error('Describe the pattern first');
+  const res=await (fetchImpl||fetch)(AI_URL,{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':key,
+      'anthropic-version':'2023-06-01',
+      // Required for a browser-origin request; the renderer is one.
+      'anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({
+      model:AI_MODEL,
+      // Thinking is on by default on this model and max_tokens caps thinking plus
+      // output together, so this is sized for both. Low effort: writing a small
+      // program is not the kind of work deeper reasoning improves.
+      max_tokens:4000,
+      output_config:{effort:'low',format:{type:'json_schema',schema:aiSchema()}},
+      system:aiSystem(),
+      messages:[{role:'user',content:desc}]}),
+  });
+  if(!res.ok){
+    let detail='';
+    try{const e=await res.json();detail=e&&e.error&&e.error.message||'';}catch{}
+    throw new Error('The model service said '+res.status+(detail?': '+detail:''));}
+  const data=await res.json();
+  // Safety classifiers can decline; that is a 200 with no usable content, so it
+  // has to be checked before reading the reply.
+  if(data.stop_reason==='refusal') throw new Error('The model declined this request');
+  const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+  if(!text) throw new Error('The model returned nothing to render');
+  let prog;
+  try{ prog=JSON.parse(text); }
+  catch{ throw new Error('The model did not return a program'); }
+  dslValidate(prog);                    // throws with a readable reason
+  return prog;
+}
+$('aiGo').onclick=async()=>{
+  const btn=$('aiGo');btn.disabled=true;aiSay('Writing…',true);
+  try{
+    const prog=await aiWrite($('aiWhat').value);
+    dslShow(prog);
+    aiSay('Written. Read it above, then Replace canvas.',true);
+  }catch(e){ aiSay(e.message,false); }
+  finally{ btn.disabled=false; }};
+aiSync();
+
 $('dslGo').onclick=()=>{
   let r;
   try{ r=dslRender(JSON.parse($('dslSrc').value)); }

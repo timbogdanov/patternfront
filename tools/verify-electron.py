@@ -129,6 +129,21 @@ def main() -> int:
     # so nothing else in this suite would notice.
     chk('the mac bundle is ad-hoc signed at minimum', 'identity: "-"' in yml)
 
+    # The renderer may reach exactly one outbound origin, and only when the user
+    # has set their own key. `https:` or `*` here would let a compromised renderer
+    # phone anywhere; this check is what keeps the widening honest.
+    print("\n=== outbound network ===")
+    main = read("main.js")
+    connect = re.search(r"connect-src ([^\"]+)", main)
+    # The directive ends at the ';' that separates it from the next one.
+    hosts = connect.group(1).split(";")[0].split() if connect else []
+    chk("connect-src names the AI provider and nothing wider",
+        "https://api.anthropic.com" in hosts
+        and not any(h in ("https:", "*", "http:") for h in hosts),
+        " ".join(hosts))
+    chk("the key is never written into the packaged app",
+        "sk-ant" not in read_root("app/patternfront.html"))
+
     print()
     if fails:
         print(f"*** {len(fails)} FAILURE(S) ***")

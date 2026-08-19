@@ -60,8 +60,12 @@ function matchBrace(text, from, open = '{', close = '}') {
 }
 
 function grabFunction(name) {
-  const at = js.indexOf(`function ${name}(`);
+  let at = js.indexOf(`function ${name}(`);
   if (at < 0) throw new Error(`function ${name} not found`);
+  // Take the `async` with it. Slicing from `function` silently drops the keyword
+  // and the extracted copy then throws "await is only valid in async functions"
+  // — an error about the test harness wearing the costume of an app bug.
+  if (js.slice(Math.max(0, at - 6), at) === 'async ') at -= 6;
   const brace = js.indexOf('{', js.indexOf(')', at));
   return js.slice(at, matchBrace(js, brace) + 1);
 }
@@ -540,6 +544,126 @@ function duotoneTests() {
       JSON.stringify(richCanvas));
 }
 
+/* ── 6c. the model writes a program, and every way that can go wrong ───── */
+//
+// The AI path is the only part of the app that touches the network, so it is the
+// only part that can fail in ways the user did not cause. None of these tests
+// needs a key or a network: aiWrite() takes the fetch implementation as an
+// argument precisely so the model can be stubbed.
+//
+// What matters is not that the happy path works — it is that every failure lands
+// as a message rather than as a broken editor, and that a program from a model
+// goes through exactly the same validation as one typed by hand.
+
+async function aiTests() {
+  console.log('\n=== writing a program with a model ===');
+
+  const GOOD = {
+    canvas: { width: 32, height: 32, scale: 1, autoSize: true },
+    layers: [{ op: 'set', shape: { type: 'diagonal', dx: 1, dy: 1, period: 8, thickness: 3 } }],
+    post: { mirrorX: false, mirrorY: false, rotate90: 0, invert: false },
+  };
+  const reply = (body, ok = true, status = 200) => async () => ({
+    ok, status,
+    json: async () => body,
+  });
+  const asText = (obj) => ({ stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify(obj) }] });
+
+  const ctx = sandbox({
+    store: { get: (k) => (k === 'pf.aikey' ? 'sk-test' : ''), set() {} },
+    $: () => ({ hidden: false, disabled: false, value: '', innerHTML: '' }),
+  });
+  run(ctx, [
+    grabConst('DSL_MIN_W'), grabConst('DSL_SHAPES'), grabConst('DSL_CANVAS_LOCKED'),
+    grabConst('DSL_RANGES'), grabConst('floorMod'), grabFunction('pyRound'),
+    grabFunction('gcd'), grabFunction('lcm'), grabFunction('hash2'),
+    grabConst('F57'), grabConst('F35'),
+    grabFunction('dslValidateShape'), grabFunction('dslValidate'),
+    grabConst('AI_URL'), grabConst('AI_MODEL'), grabConst('AI_KEY'),
+    grabFunction('aiSchema'), grabFunction('aiSystem'),
+    grabConst('aiKey'), grabFunction('aiWrite'),
+  ].join('\n'));
+  const aiWrite = ctx.aiWrite;
+  const failed = async (fetchImpl, desc = 'stripes') => {
+    try { await aiWrite(desc, fetchImpl); return null; }
+    catch (e) { return e.message; }
+  };
+
+  // The request itself: a wrong model or a rejected parameter is a 400 nobody
+  // would guess from the UI, so the shape is pinned here rather than discovered.
+  let sent = null;
+  await aiWrite('diagonal stripes', async (url, init) => {
+    sent = { url, body: JSON.parse(init.body), headers: init.headers };
+    return { ok: true, status: 200, json: async () => asText(GOOD) };
+  });
+  chk('it posts to the messages endpoint', sent.url === 'https://api.anthropic.com/v1/messages', sent.url);
+  chk('it asks for the current model', sent.body.model === 'claude-opus-5', sent.body.model);
+  chk('it sends no rejected sampling parameters',
+      !('temperature' in sent.body) && !('top_p' in sent.body) && !('top_k' in sent.body));
+  chk('it sends no removed thinking budget',
+      !sent.body.thinking || !('budget_tokens' in sent.body.thinking));
+  chk('it leaves room for thinking as well as output', sent.body.max_tokens >= 2000,
+      String(sent.body.max_tokens));
+  chk('it constrains the reply to the schema',
+      sent.body.output_config.format.type === 'json_schema');
+  chk('the browser-origin header is set',
+      sent.headers['anthropic-dangerous-direct-browser-access'] === 'true');
+  chk('the key travels in the header, never the body',
+      sent.headers['x-api-key'] === 'sk-test' && !JSON.stringify(sent.body).includes('sk-test'));
+
+  // The schema is generated from the DSL's own tables, so it cannot drift.
+  const schema = ctx.aiSchema();
+  const shapeEnum = schema.properties.layers.items.properties.shape.properties.type.enum;
+  // `const` bindings are not properties of the vm context, so ask for the value.
+  const primitiveCount = vm.runInContext('Object.keys(DSL_SHAPES).length', ctx);
+  chk('the schema offers every primitive the renderer has',
+      shapeEnum.length === primitiveCount, `${shapeEnum.length} primitives`);
+  chk('the prompt names the primitives too',
+      ctx.aiSystem().includes('diagonal') && ctx.aiSystem().includes('halftone'));
+
+  // A well-formed reply is validated, not trusted.
+  const prog = await aiWrite('diagonal stripes', reply(asText(GOOD)));
+  chk('a well-formed program comes back validated',
+      prog.layers[0].shape.type === 'diagonal' && prog.layers[0].op === 'set');
+
+  // Every failure mode, in the order a user would meet them.
+  chk('an unknown shape is rejected, not rendered',
+      (await failed(reply(asText({ layers: [{ op: 'set', shape: { type: 'nope' } }] })))) ===
+      'unknown shape type "nope"');
+  chk('a reply that is not a program says so',
+      (await failed(reply({ stop_reason: 'end_turn', content: [{ type: 'text', text: 'sorry!' }] }))) ===
+      'The model did not return a program');
+  chk('an empty reply says so',
+      (await failed(reply({ stop_reason: 'end_turn', content: [] }))) ===
+      'The model returned nothing to render');
+  chk('a refusal is reported, not parsed',
+      (await failed(reply({ stop_reason: 'refusal', content: [] }))) ===
+      'The model declined this request');
+  const http = await failed(reply({ error: { message: 'invalid x-api-key' } }, false, 401));
+  chk('an HTTP error carries the status and the reason',
+      http.includes('401') && http.includes('invalid x-api-key'), http);
+  chk('an empty description is refused before any request',
+      (await failed(() => { throw new Error('should not have been called'); }, '  ')) ===
+      'Describe the pattern first');
+
+  // With no key the path refuses cleanly rather than sending an unauthenticated
+  // request — the panel hides the control, and this is the belt to that braces.
+  const noKey = sandbox({ store: { get: () => '', set() {} },
+                          $: () => ({ hidden: false, disabled: false, value: '', innerHTML: '' }) });
+  run(noKey, [grabConst('AI_KEY'), grabConst('aiKey'), grabConst('AI_URL'), grabConst('AI_MODEL'),
+              grabConst('DSL_MIN_W'), grabConst('DSL_SHAPES'), grabConst('DSL_RANGES'),
+              grabFunction('aiSchema'), grabFunction('aiSystem'),
+              grabConst('DSL_CANVAS_LOCKED'), grabConst('floorMod'), grabFunction('pyRound'),
+              grabFunction('gcd'), grabFunction('lcm'), grabFunction('hash2'),
+              grabConst('F57'), grabConst('F35'),
+              grabFunction('dslValidateShape'), grabFunction('dslValidate'),
+              grabFunction('aiWrite')].join('\n'));
+  let noKeyMsg = null;
+  try { await noKey.aiWrite('stripes', () => { throw new Error('should not have been called'); }); }
+  catch (e) { noKeyMsg = e.message; }
+  chk('with no key it never reaches the network', noKeyMsg === 'No API key set', String(noKeyMsg));
+}
+
 /* ── 7. grab: 8-connected flood fill over an ASCII scene ───────────────── */
 
 function grabTests() {
@@ -760,6 +884,7 @@ oversize.then(async () => {
   loadTests();
   previewTests();
   duotoneTests();
+  await aiTests();
   fitTests();
   grabTests();
   clearTests();
