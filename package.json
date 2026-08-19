@@ -2,8 +2,14 @@
   "name": "patternfront",
   "productName": "PatternFront",
   "version": "0.1.1",
-  "description": "A 1-bit pattern editor for OpenFront territory patterns — desktop app for macOS and Windows.",
-  "keywords": ["pixel-art", "openfront", "pattern-editor", "1-bit", "electron"],
+  "description": "A 1-bit pattern editor for OpenFront territory patterns \u2014 desktop app for macOS and Windows.",
+  "keywords": [
+    "pixel-art",
+    "openfront",
+    "pattern-editor",
+    "1-bit",
+    "electron"
+  ],
   "homepage": "https://github.com/timbogdanov/patternfront#readme",
   "bugs": "https://github.com/timbogdanov/patternfront/issues",
   "repository": {
@@ -24,10 +30,12 @@
     "dist:win": "electron-builder --win",
     "icon": "python3 tools/gen-icon.py",
     "stamps": "python3 tools/gen-stamps.py",
-    "fixtures": "python3 tools/gen-codec-fixtures.py"
+    "fixtures": "python3 tools/gen-codec-fixtures.py",
+    "e2e": "node tests/e2e/drive.mjs"
   },
   "devDependencies": {
     "electron": "^43.4.0",
-    "electron-builder": "^26.15.3"
+    "electron-builder": "^26.15.3",
+    "playwright-core": "^1.62.1"
   }
 }
