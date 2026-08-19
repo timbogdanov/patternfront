@@ -54,8 +54,10 @@ GRID = 8                 # the motif is an 8x8 pattern, blown up
 # The app's own chrome, so the icon and the window agree.
 PAPER = (0x20, 0x21, 0x25)      # --well, the editor's background
 INK = (0xE6, 0xE6, 0xE8)        # the editor's foreground
-DUO_A = (0x29, 0x62, 0xFF)      # the accent, standing in for a duotone primary
-DUO_B = (0xF1, 0x7A, 0x3C)      # its warm complement, the secondary
+ACCENT = (0xE1, 0xB8, 0x5F)     # --accent, the same gold the app selects with
+# Inside the band only the *ink* changes colour; the ground stays the same dark as
+# everywhere else. Giving the band its own ground introduced a third grey that sat
+# between paper and ink and made the whole tile muddy at small sizes.
 
 # A diagonal, which is one of the patterns the editor ships, at the coarsest
 # step that still reads as motion. Two cells of ink, two of paper, shifted one
@@ -133,10 +135,10 @@ def main() -> int:
         cy = min(GRID - 1, max(0, int((y - inset) // cell)))
         lit = ART[cy][cx] == "#"
 
-        if in_band(cx, cy):
-            rgb = DUO_B if lit else DUO_A
+        if lit:
+            rgb = ACCENT if in_band(cx, cy) else INK
         else:
-            rgb = INK if lit else PAPER
+            rgb = PAPER
 
         return (rgb[0], rgb[1], rgb[2], round(a * 255))
 

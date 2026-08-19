@@ -27,9 +27,9 @@
   --text:#c0c0c0;        /* text                */
   --dim:#7d7d7d;         /* tab_normal_text     */
   --mute:#636d79;        /* status_bar_text     */
-  --accent:#2962ff;      /* OpenFront's own blue, src/core/.../Colors.ts */
-  --accent-hi:#4b8fff;
-  --accent-ink:#ffffff;
+  --accent:#e1b85f;      /* selected            */
+  --accent-hi:#eec877;   /* accent hover        */
+  --accent-ink:#41444a;  /* selected_text       */
   --link:#6e9adb;        /* link_text           */
   --danger:#c75a68;      /* flag_active         */
   --ok:#64c864;          /* select_box_grid     */
@@ -1774,17 +1774,17 @@ function refreshOF(){
     ' map tiles. Repeats every '+(doc.w<<scale)+'×'+(doc.h<<scale)+'.';
   if(doc.w>OF_MAXW||doc.h>OF_MAXH){
     $('ofData').textContent='—';
-    $('ofStat').innerHTML='<span style="color:#e5674b">Canvas is '+doc.w+'×'+doc.h+
+    $('ofStat').innerHTML='<span style="color:var(--danger)">Canvas is '+doc.w+'×'+doc.h+
       '. OpenFront allows at most '+OF_MAXW+'×'+OF_MAXH+'.</span>';
     return null;}
   const s=encodeOF(doc.w,doc.h,scale,to1bit());
   $('ofData').textContent=s;
   $('ofStat').innerHTML=s.length<=OF_MAXB64
-    ?'<span style="color:#5cc98a">Valid · '+s.length+' / '+OF_MAXB64+' characters</span>'
-    :'<span style="color:#e5674b">Too long — '+s.length+' / '+OF_MAXB64+'</span>';
+    ?'<span style="color:var(--ok)">Valid · '+s.length+' / '+OF_MAXB64+' characters</span>'
+    :'<span style="color:var(--danger)">Too long — '+s.length+' / '+OF_MAXB64+'</span>';
   return s;}
 function copyText(t,ok){
-  const done=()=>{$('ofStat').innerHTML='<span style="color:#5cc98a">'+ok+'</span>';};
+  const done=()=>{$('ofStat').innerHTML='<span style="color:var(--ok)">'+ok+'</span>';};
   const fb=()=>{const ta=document.createElement('textarea');ta.value=t;
     document.body.appendChild(ta);ta.select();
     try{document.execCommand('copy');done();}
