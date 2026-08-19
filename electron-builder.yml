@@ -28,11 +28,13 @@ fileAssociations:
 mac:
   category: public.app-category.graphics-design
   icon: build/icon.png
+  # One artifact, deliberately. Four macOS files (two DMGs, two zips) meant a
+  # person downloading twice ended up with PatternFront, PatternFront 2 and
+  # PatternFront 3 sitting in Finder, with no way to tell which was which.
+  # Apple silicon only: an Intel build is a build nobody here can test.
   target:
     - target: dmg
-      arch: [arm64, x64]
-    - target: zip
-      arch: [arm64, x64]
+      arch: [arm64]
   # Ad-hoc signed. Not a substitute for a Developer ID — Gatekeeper still
   # refuses the app on first launch — but it is the difference between a refusal
   # the user can clear and one they cannot.
@@ -80,10 +82,11 @@ dmg:
 
 win:
   icon: build/icon.png
+  # Likewise one: the installer, x64. The arm64 and universal installers and the
+  # portable build were three more things to choose between and none of them
+  # answered a question the plain installer does not.
   target:
     - target: nsis
-      arch: [x64, arm64]
-    - target: portable
       arch: [x64]
 
 nsis:
@@ -93,9 +96,6 @@ nsis:
   createDesktopShortcut: true
   createStartMenuShortcut: true
   artifactName: ${productName}-Setup-${version}-${arch}.${ext}
-
-portable:
-  artifactName: ${productName}-${version}-portable.${ext}
 
 # electron-builder would otherwise try to reach out during CI runs.
 publish: null
