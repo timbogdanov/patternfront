@@ -153,6 +153,24 @@ def main() -> int:
     chk("column widths default to 152 / 240 / 190 @1x",
         "--wL:15.2rem" in css and "--wP:24rem" in css and "--wR:19rem" in css)
     chk("24px bars @1x", "height:2.4rem" in css)
+    # `.wide` means "fill the row". It was written as `input[type=number].wide`,
+    # which silently skips every text-ish field: an attribute selector matches
+    # the attribute, so it misses `type=password` AND an <input> with no type at
+    # all. The API-key and prompt fields wore the class and stayed 195px wide in
+    # a 491px row. Keep the selector type-agnostic.
+    wide_rule = re.search(r"(^|[,\s{}])\.wide\s*\{", css, re.M)
+    chk("`.wide` fills its row for every input type, not just numbers",
+        wide_rule is not None and "input[type=number].wide{" not in css)
+    # Text fields need the same box as the numeric ones. `input[type=text]`
+    # alone misses password fields and typeless inputs, which is why three of
+    # them carried duplicated inline styles instead.
+    chk("text, password and typeless inputs share one rule",
+        "input[type=password]" in css and "input:not([type])" in css)
+    # body{user-select:none} keeps drags from selecting the chrome, but it is
+    # inherited straight into every form field, so you cannot select what you
+    # just typed — or double-click a pasted key to replace it.
+    chk("form fields opt back in to text selection",
+        re.search(r"input[^{]*,?[^{]*textarea[^{]*\{[^}]*user-select:\s*text", css) is not None)
 
     print("\n=== interface scale ===")
     chk("root font-size drives the scale", "font-size:calc(10px * var(--scale))" in css)

@@ -13,7 +13,7 @@
 
 const fs = require('fs/promises');
 const path = require('path');
-const { app, BrowserWindow, dialog, ipcMain, protocol, net, shell } = require('electron');
+const { app, BrowserWindow, Menu, MenuItem, dialog, ipcMain, protocol, net, shell } = require('electron');
 
 const docs = require('./documents');
 const menu = require('./menu');
@@ -132,6 +132,30 @@ function createWindow() {
     return { action: 'deny' };
   });
   win.webContents.on('will-attach-webview', e => e.preventDefault());
+
+  // Electron ships no context menu of its own, and the canvas has its own. That
+  // leaves a text field with neither — right-clicking the API-key box offered
+  // nothing at all, which is half of why pasting a key felt impossible. Built
+  // per event from the flags Chromium reports, so the items are only ever
+  // offered when they would actually do something.
+  win.webContents.on('context-menu', (_e, params) => {
+    if (!params.isEditable) return;
+    const f = params.editFlags;
+    const m = new Menu();
+    for (const [label, role, enabled] of [
+      ['Undo', 'undo', f.canUndo], ['Redo', 'redo', f.canRedo],
+      [null, null, null],
+      ['Cut', 'cut', f.canCut], ['Copy', 'copy', f.canCopy],
+      ['Paste', 'paste', f.canPaste],
+      [null, null, null],
+      ['Select All', 'selectAll', f.canSelectAll],
+    ]) {
+      m.append(label
+        ? new MenuItem({ label, role, enabled: !!enabled })
+        : new MenuItem({ type: 'separator' }));
+    }
+    m.popup({ window: win });
+  });
 
   win.on('close', onClose);
   win.on('closed', () => { win = null; });
