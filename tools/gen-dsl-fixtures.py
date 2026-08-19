@@ -43,6 +43,7 @@ ROOT = os.path.dirname(HERE)
 OUT = os.path.join(ROOT, "tests", "fixtures", "dsl.json")
 
 from dsl_prototype import (encode, render, tiles_exactly,     # noqa: E402
+                           seam_scores, seam_label,
                            FONT_5X7, FONT_3X5)
 from dsl_demo import GALLERY                                  # noqa: E402
 
@@ -134,6 +135,7 @@ def main() -> int:
         ok, _px, _py = tiles_exactly(program, w, h)
         if program.get("canvas", {}).get("autoSize", True) and not ok:
             tiling_failures.append(name)
+        sh, sv = seam_scores(w, h, buf)
         built.append({
             "name": name,
             "program": program,
@@ -142,6 +144,11 @@ def main() -> int:
             "scale": scale,
             "ink": sum(buf),
             "patternData": data,
+            # The seam metric, which an earlier revision got wrong for 17 of 28
+            # correctly-tiling patterns. Pinning the scores as well as the label
+            # means a port that lands on the right verdict by luck still fails.
+            "seam": [sh, sv],
+            "seamLabel": seam_label(sh, sv),
         })
 
     if tiling_failures:

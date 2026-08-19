@@ -446,6 +446,7 @@ input[type=color]{width:100%;height:1.8rem;background:var(--well);
           <button class="b" id="pvMap" title="Show it on a territory, at map scale · drag to move it">Map</button>
           <button class="b" id="pvFit" title="Fit to the panel">Fit</button>
           <span class="num" id="pvZ" style="min-width:3rem">fit</span>
+          <span class="note" id="pvSeam" title="Does this show a seam once the game tiles it?"></span>
           <div class="sp"></div>
           <button class="b sq" id="pvPlay" title="Play">▶</button>
         </div>
@@ -576,6 +577,11 @@ input[type=color]{width:100%;height:1.8rem;background:var(--well);
       <button class="b" id="ofJson">Copy JSON</button>
     </div>
     <span class="note" id="ofStat"></span>
+    <div class="r"><input id="ofName" placeholder="pattern name" class="wide"
+      style="background:var(--well);color:var(--text);border:0.1rem solid var(--edge-dim);
+      font:inherit;padding:0 0.4rem">
+      <button class="b" id="ofEntry" style="flex:0 0 auto">cosmetics.json entry</button></div>
+    <div class="data" id="ofEntryOut" hidden></div>
     <div class="r" style="margin-top:0.4rem">
       <input type="text" id="ofIn" spellcheck="false" style="flex:1;min-width:0"
         placeholder="paste patternData to edit it">
@@ -1207,7 +1213,21 @@ function fitCanvas(){
   zoom=Math.max(1,Math.min(48,z||1));
   $('zoom').value=zoom;$('zoomO').textContent=zoom;
   layout();}
-function commit(){paint();overlay();drawThumbs();syncStatus();saveSoon();markDirty();}
+function commit(){paint();overlay();drawThumbs();syncStatus();saveSoon();markDirty();seamSoon();}
+/* Scoring walks the bitmap several times looking for its intrinsic period, which
+   is far too much to redo on every pointermove. It settles after the stroke. */
+let seamTimer=null;
+function seamSoon(){clearTimeout(seamTimer);seamTimer=setTimeout(updateSeam,250);}
+function updateSeam(){
+  const el=$('pvSeam'); if(!el) return;
+  if(doc.w>OF_MAXW||doc.h>OF_MAXH){el.textContent='';return;}
+  const [sh,sv]=seamScores(doc.w,doc.h,to1bit()),label=seamLabel(sh,sv);
+  el.textContent=label;
+  el.style.color=label==='Seamless'?'var(--ok)'
+    :label==='Slight seam'?'var(--accent)':'var(--danger)';
+  el.title=label+' — wrap discontinuity '+Math.max(sh,sv).toFixed(2)
+    +'× the pattern\'s own interior transitions';
+}
 function fullSync(){alloc();layout();drawLayers();drawFrames();drawPalette();
   drawPairs();drawStamps();syncColour();syncStatus();syncMode();syncHist();setTool(tool);}
 
@@ -1782,6 +1802,17 @@ function download(b,n){
   a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(u),5000);}
 $('expBtn').onclick=()=>{openOv('ovExp');refreshOF();};
+/* A pasteable cosmetics.json entry. The file keys patterns by their encoded
+   data, so the entry is exactly that key and a name; role_group is entitlement
+   metadata the game assigns, not something a new pattern claims for itself. */
+$('ofEntry').onclick=()=>{
+  const data=refreshOF();
+  const out=$('ofEntryOut');
+  if(!data){out.hidden=false;out.textContent='Canvas is outside the format limits.';return;}
+  const name=($('ofName').value.trim()||'my_pattern')
+    .toLowerCase().replace(/[^a-z0-9_]+/g,'_').replace(/^_+|_+$/g,'')||'my_pattern';
+  out.hidden=false;
+  out.textContent=JSON.stringify({[data]:{name}},null,2).slice(1,-1).trim();};
 $('expX').onclick=()=>closeOv('ovExp');
 $('ovExp').addEventListener('pointerdown',e=>{if(e.target===$('ovExp'))closeOv('ovExp');});
 $('exScale').oninput=e=>$('exO').textContent=e.target.value+'×';
@@ -2122,6 +2153,85 @@ function dslSize(program){
     while(size<lo) size+=period;
     return size;};
   return [fit(px,wantW,DSL_MIN_W,DSL_MAX_W),fit(py,wantH,DSL_MIN_H,DSL_MAX_H)];
+}
+
+/* ═══════ seam scoring ═══════
+   Does this pattern show a seam when the game tiles it?
+
+   A correctly-tiling periodic pattern legitimately has a hard transition at the
+   wrap — period-8 stripes on a 32-wide canvas put a stripe boundary exactly
+   there. What makes a seam *visible* is the wrap being an OUTLIER: more
+   discontinuous than the pattern's own interior ever gets. So the wrap is ranked
+   against the 90th percentile of interior transitions, not against their mean —
+   the mean is dragged down by the many identical column pairs inside a periodic
+   pattern, which makes every legitimate boundary look like a defect.
+
+   An earlier version of this metric flagged 17 of 28 correctly-tiling patterns
+   and had to be rewritten. This is the rewritten one, ported from
+   tools/dsl_prototype.py rather than re-derived.
+*/
+const PERIODIC_EPS=0.02,RHYTHM_PENALTY=3.0;
+function percentile(values,q){
+  if(!values.length) return 0;
+  const s=[...values].sort((a,b)=>a-b);
+  if(s.length===1) return s[0];
+  const pos=q*(s.length-1),lo=Math.floor(pos),hi=Math.min(lo+1,s.length-1);
+  return s[lo]+(s[hi]-s[lo])*(pos-lo);
+}
+/* Smallest shift under which the bitmap best repeats. Measured on the interior
+   only, so an edge defect cannot corrupt the measurement meant to expose it. */
+function dominantPeriod(w,h,buf,axis,limit){
+  const span=axis==='x'?w:h,scan=Math.min(span,limit||span);
+  let bestP=span,bestErr=1;
+  for(let p=2;p<=Math.floor(span/2);p++){
+    let bad=0,tot=0;
+    if(axis==='x'){
+      for(let x=0;x<scan-p;x++)for(let y=0;y<h;y++){tot++;if(buf[y*w+x]!==buf[y*w+x+p])bad++;}
+    }else{
+      for(let y=0;y<scan-p;y++)for(let x=0;x<w;x++){tot++;if(buf[y*w+x]!==buf[(y+p)*w+x])bad++;}}
+    if(!tot) continue;
+    const err=bad/tot;
+    if(err<bestErr-1e-9){bestErr=err;bestP=p;}}
+  return [bestP,bestErr];
+}
+/** How badly period `p` breaks once the pattern is tiled (wrapped). */
+function toroidalError(w,h,buf,axis,p){
+  let bad=0,tot=0;
+  if(axis==='x'){
+    for(let x=0;x<w;x++)for(let y=0;y<h;y++){tot++;if(buf[y*w+x]!==buf[y*w+(x+p)%w])bad++;}
+  }else{
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){tot++;if(buf[y*w+x]!==buf[((y+p)%h)*w+x])bad++;}}
+  return tot?bad/tot:0;
+}
+/* Local adjacency at the wrap cannot see a broken cadence: period-7 stripes on a
+   32-wide canvas make a perfectly ordinary-looking edge, and a duplicated final
+   column puts the defect one pixel INSIDE the wrap. Recover the intrinsic period
+   from the interior, then ask whether tiling still honours it. */
+function rhythmPenalty(w,h,buf,axis){
+  const span=axis==='x'?w:h;
+  if(span<6) return 0;
+  const [p,errInterior]=dominantPeriod(w,h,buf,axis,Math.max(4,Math.floor(span*3/4)));
+  if(errInterior>=PERIODIC_EPS) return 0;      // not periodic enough to have a rhythm
+  if(span%p!==0) return RHYTHM_PENALTY;        // cadence cannot survive tiling
+  return toroidalError(w,h,buf,axis,p)>errInterior+PERIODIC_EPS?RHYTHM_PENALTY:0;
+}
+function seamScores(w,h,buf){
+  const px=(x,y)=>buf[y*w+x];
+  const colDiffs=[];
+  for(let x=0;x<w-1;x++){let d=0;for(let y=0;y<h;y++)if(px(x,y)!==px(x+1,y))d++;colDiffs.push(d);}
+  let wrapH=0;for(let y=0;y<h;y++)if(px(w-1,y)!==px(0,y))wrapH++;
+  let sh=wrapH===0?0:wrapH/Math.max(percentile(colDiffs,0.90),1);
+  const rowDiffs=[];
+  for(let y=0;y<h-1;y++){let d=0;for(let x=0;x<w;x++)if(px(x,y)!==px(x,y+1))d++;rowDiffs.push(d);}
+  let wrapV=0;for(let x=0;x<w;x++)if(px(x,h-1)!==px(x,0))wrapV++;
+  let sv=wrapV===0?0:wrapV/Math.max(percentile(rowDiffs,0.90),1);
+  sh=Math.max(sh,rhythmPenalty(w,h,buf,'x'));
+  sv=Math.max(sv,rhythmPenalty(w,h,buf,'y'));
+  return [sh,sv];
+}
+function seamLabel(sh,sv){
+  const worst=Math.max(sh,sv);
+  return worst<=1.3?'Seamless':(worst<=2.0?'Slight seam':'Visible seam');
 }
 
 /** Run a program. Returns {w,h,scale,bits} in the same shape decodeOF gives. */
@@ -2640,6 +2750,8 @@ if(native()){
     a.addEventListener('click',e=>{
       e.preventDefault();window.pfNative.openExternal(a.href);});});
 }
+// The badge is normally driven by commit(); boot never commits, so ask once.
+seamSoon();
 // Exposed for the smoke test and for anything driving the editor from outside.
 window.__pf={commands:COMMANDS,isNative:native};
 })();

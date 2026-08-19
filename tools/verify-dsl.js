@@ -63,6 +63,13 @@ vm.runInContext([
   grabFunction(js, 'dslValidate'),
   grabFunction(js, 'dslSize'),
   grabFunction(js, 'dslRender'),
+  grabConst(js, 'PERIODIC_EPS'),
+  grabFunction(js, 'percentile'),
+  grabFunction(js, 'dominantPeriod'),
+  grabFunction(js, 'toroidalError'),
+  grabFunction(js, 'rhythmPenalty'),
+  grabFunction(js, 'seamScores'),
+  grabFunction(js, 'seamLabel'),
 ].join('\n'), ctx);
 
 /** A multi-line `const NAME={...};` — grabConst only handles single lines. */
@@ -77,6 +84,8 @@ function grabMulti(name) {
 const dslRender = vm.runInContext('dslRender', ctx);
 const encodeOF = vm.runInContext('encodeOF', ctx);
 const pyRound = vm.runInContext('pyRound', ctx);
+const seamScores = vm.runInContext('seamScores', ctx);
+const seamLabel = vm.runInContext('seamLabel', ctx);
 
 const corpus = JSON.parse(fs.readFileSync(FIXTURES, 'utf8'));
 const failures = [];
@@ -105,6 +114,7 @@ for (const [input, want] of [[0.5, 0], [1.5, 2], [2.5, 2], [3.5, 4], [-2.5, -2],
 }
 
 const primitives = new Set();
+const labels = new Set();
 for (const c of corpus.cases) {
   let got;
   try { got = dslRender(c.program); }
@@ -125,12 +135,24 @@ for (const c of corpus.cases) {
                 + `(${data.length} vs ${c.patternData.length} chars)`);
     continue;
   }
+  const [sh, sv] = seamScores(got.w, got.h, got.bits);
+  if (Math.abs(sh - c.seam[0]) > 1e-9 || Math.abs(sv - c.seam[1]) > 1e-9) {
+    failures.push(`${c.name}: seam scores ${sh.toFixed(4)}/${sv.toFixed(4)}, `
+                + `oracle says ${c.seam[0].toFixed(4)}/${c.seam[1].toFixed(4)}`);
+    continue;
+  }
+  if (seamLabel(sh, sv) !== c.seamLabel) {
+    failures.push(`${c.name}: seam label ${seamLabel(sh, sv)}, oracle says ${c.seamLabel}`);
+    continue;
+  }
+  labels.add(c.seamLabel);
   for (const l of c.program.layers) primitives.add(l.shape.type);
 }
 
 console.log(`${corpus.cases.length} programs through the editor's own DSL`);
 console.log(`  ${primitives.size} primitives exercised, `
           + `every result compared as encoded patternData`);
+console.log(`  seam scores match to 1e-9; verdicts seen: ${[...labels].sort().join(', ')}`);
 
 if (failures.length) {
   console.log(`\n*** ${failures.length} FAILURE(S) ***`);
