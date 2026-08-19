@@ -60,7 +60,15 @@ def encode(w: int, h: int, scale: int, bits) -> str:
 def main() -> int:
     src = open(APP, encoding="utf-8").read()
     js = "\n".join(re.findall(r"<script>(.*?)</script>", src, re.S))
-    stamps = re.findall(r"\['([a-z]+)','([a-z0-9_-]+)','([A-Za-z0-9_-]+)'\]", js)
+    # Only the STAMPS table. Scanning the whole script for three-string arrays
+    # matched anything shaped like one — an enum of ['circle','square','diamond']
+    # was read as a stamp and failed to decode as pattern data.
+    block = re.search(r"const STAMPS=\[\n(.*?)\n\];", js, re.S)
+    if not block:
+        print("no STAMPS table found")
+        return 1
+    stamps = re.findall(r"\['([a-z]+)','([a-z0-9_-]+)','([A-Za-z0-9_-]+)'\]",
+                        block.group(1))
     if not stamps:
         print("no STAMPS table found")
         return 2

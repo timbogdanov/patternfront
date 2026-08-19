@@ -76,7 +76,12 @@ async function serve(request) {
         'content-security-policy':
           "default-src 'none'; img-src 'self' data: blob:; " +
           "style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; " +
-          "font-src 'self'; connect-src 'self' blob: data:; form-action 'none'; " +
+          // api.anthropic.com is the one outbound origin the renderer may reach, and
+          // only when the user has set their own key. Widened to that host rather
+          // than to https:, so a compromised renderer still cannot phone anywhere
+          // else. Everything the app does without a key stays entirely local.
+          "font-src 'self'; connect-src 'self' blob: data: https://api.anthropic.com; " +
+          "form-action 'none'; " +
           "base-uri 'none'; frame-ancestors 'none'",
       },
     });

@@ -54,8 +54,11 @@ function matchBrace(text, from) {
 
 /** Source of `function <name>(...) { ... }`, braces balanced. */
 function grabFunction(js, name) {
-  const at = js.indexOf(`function ${name}(`);
+  let at = js.indexOf(`function ${name}(`);
   if (at < 0) throw new Error(`function ${name} not found in the editor`);
+  // Include a preceding `async`; without it the extracted copy throws
+  // "await is only valid in async functions" and reads as an app bug.
+  if (js.slice(Math.max(0, at - 6), at) === 'async ') at -= 6;
   return js.slice(at, matchBrace(js, js.indexOf('{', js.indexOf(')', at))) + 1);
 }
 
