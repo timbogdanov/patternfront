@@ -37,7 +37,9 @@ TOKENS = {
     "--text": "#c0c0c0",      # text
     "--dim": "#7d7d7d",       # tab_normal_text
     "--mute": "#636d79",      # status_bar_text
-    "--accent": "#2962ff",    # OpenFront's own blue
+    "--accent": "#e1b85f",    # selected
+    "--accent-hi": "#eec877",  # accent hover
+    "--accent-ink": "#41444a", # selected_text
     "--link": "#6e9adb",      # link_text
     "--danger": "#c75a68",    # flag_active
 }
@@ -45,7 +47,7 @@ TOKENS = {
 # The accent is exempt: Aseprite's own `selected` is a bright gold, and
 # selection is meant to be loud. The rule is about chrome, not highlights.
 MAX_SURFACE_LUMA = 0.30
-ACCENT_FAMILY = {"2962ff", "4b8fff"}
+ACCENT_FAMILY = {"e1b85f", "eec877"}
 
 fails: list[str] = []
 
@@ -200,7 +202,28 @@ def main() -> int:
     chk("picking a pair yields exactly two colours",
         "doc.palette=[{r:0,g:0,b:0,a:0},hexRGB(prim),hexRGB(sec)]" in js)
 
-    chk("accent is no longer gold", "#e1b85f" not in css)
+    # Aseprite's dark accent is gold and blue is reserved for links, which is what
+    # keeps the two distinguishable. An earlier revision moved the accent to
+    # OpenFront's blue (#2962ff), leaving two near-identical blues doing different
+    # jobs. The tool's chrome belongs to the audience that lives in Aseprite;
+    # OpenFront fidelity is carried by the format and the preview, not the chrome.
+    chk("accent is gold, not OpenFront blue",
+        "#2962ff" not in css and "#4b8fff" not in css)
+
+    # States were the part of the system nobody wrote down, so they drifted into
+    # inline hex: four `style="color:#e5674b"` strings sat beside a --danger token
+    # that already held that job. See docs/09-design-system.md, "States".
+    print("\n=== states ===")
+    chk("status colour comes from tokens, never inline hex",
+        not re.search(r'style="color:#[0-9a-fA-F]', js), )
+    chk("focus is an outline in the accent, not a fill",
+        "outline:0.1rem solid var(--accent)" in css)
+    chk("hover changes fill and border to --edge",
+        ".b:hover:not(:disabled){background:var(--edge);border-color:var(--edge)}" in css)
+    chk("pressed drops to --well", ".b:active:not(:disabled){background:var(--well)}" in css)
+    chk("disabled dims to --well", ".b:disabled{color:var(--well)" in css)
+    chk("selected is accent fill with accent ink",
+        'background:var(--accent);color:var(--accent-ink)' in css)
 
     print("\n=== preview & colour input ===")
     chk("preview starts fitted and tiled", "pvScale=0,pvTile=true" in js)
