@@ -1723,20 +1723,43 @@ $('dslSrc').oninput=dslPreviewStat;
 const AI_URL='https://api.anthropic.com/v1/messages';
 const AI_MODEL='claude-opus-5';
 const AI_KEY='pf.aikey';
-/* The schema is built from the DSL's own tables, so it cannot drift from the
-   renderer: a primitive or parameter added to DSL_SHAPES/DSL_RANGES appears here
-   automatically. Every parameter is optional — the model supplies what a shape
-   needs — but `type` is required, since without it there is no shape at all. */
+/* Which parameters exist, and what a value means once it arrives as text. All
+   three tables are derived from the DSL's own, so a primitive or parameter added
+   to DSL_SHAPES/DSL_RANGES is offered to the model automatically. */
+const AI_ENUMS={axis:['h','v'],orientation:['up','down'],
+  shape:['circle','square','diamond'],font:['5x7','3x5']};
+const AI_BOOLS=['blue'];
+const AI_NUMS=()=>[...Object.keys(DSL_RANGES),'seed','angle'];
+const AI_PARAMS=()=>[...AI_NUMS(),...AI_BOOLS,...Object.keys(AI_ENUMS),'glyphs'];
+/* One shape parameter, as text, turned back into what the renderer expects.
+   The value arrives as a string because the schema below carries no per-parameter
+   types; this is where that is paid back, with a message a user can act on rather
+   than a NaN that clamps to a silent zero. */
+function aiCoerce(name,value){
+  if(AI_BOOLS.includes(name)) return value===true||value==='true';
+  if(AI_ENUMS[name]){
+    if(!AI_ENUMS[name].includes(value))
+      throw new Error(name+' must be one of '+AI_ENUMS[name].join(', ')+
+        ', not '+JSON.stringify(value));
+    return value;}
+  if(AI_NUMS().includes(name)){
+    const n=Number(value);
+    if(!Number.isFinite(n))
+      throw new Error(name+' is not a number: '+JSON.stringify(value));
+    return n;}
+  return String(value);
+}
+/* Structured outputs compile this schema into a grammar, and the service caps a
+   schema at 24 OPTIONAL parameters. Hanging all 29 DSL_RANGES keys plus the nine
+   others off one shape object came to 38 properties with only `type` required —
+   37 optional — and every request came back 400 with a message about grammar
+   compilation. So a shape carries its parameters as a list of name/value pairs
+   instead: nothing here is optional, the count is zero however many primitives
+   the DSL grows, and the name enum still refuses a parameter the DSL lacks.
+   Types and ranges are not in the grammar, which costs nothing — every value
+   went through aiCoerce and dslValidateShape's clamping regardless. */
 function aiSchema(){
-  const num={type:'number'},int={type:'integer'},bool={type:'boolean'},str={type:'string'};
-  const shapeProps={type:{type:'string',enum:Object.keys(DSL_SHAPES)},
-    axis:{type:'string',enum:['h','v']},
-    orientation:{type:'string',enum:['up','down']},
-    shape:{type:'string',enum:['circle','square','diamond']},
-    font:{type:'string',enum:['5x7','3x5']},
-    glyphs:str,seed:int,blue:bool,angle:int};
-  for(const k of Object.keys(DSL_RANGES))
-    shapeProps[k]=(k==='level'||k==='density')?num:int;
+  const int={type:'integer'},bool={type:'boolean'},str={type:'string'};
   return {type:'object',additionalProperties:false,
     required:['canvas','layers','post'],
     properties:{
@@ -1746,11 +1769,29 @@ function aiSchema(){
       layers:{type:'array',items:{type:'object',additionalProperties:false,
         required:['op','shape'],
         properties:{op:{type:'string',enum:['set','union','intersect','xor','subtract']},
-          shape:{type:'object',additionalProperties:false,required:['type'],
-            properties:shapeProps}}}},
+          shape:{type:'object',additionalProperties:false,
+            required:['type','params'],
+            properties:{
+              type:{type:'string',enum:Object.keys(DSL_SHAPES)},
+              params:{type:'array',items:{type:'object',additionalProperties:false,
+                required:['name','value'],
+                properties:{name:{type:'string',enum:AI_PARAMS()},value:str}}}}}}}},
       post:{type:'object',additionalProperties:false,
         required:['mirrorX','mirrorY','rotate90','invert'],
         properties:{mirrorX:bool,mirrorY:bool,rotate90:int,invert:bool}}}};
+}
+/* The reply's pair lists collapsed back into the flat shapes the rest of the
+   editor speaks, so what lands in the Program box is an ordinary program the
+   user can read and edit — the wire format never escapes this function. */
+function aiToProgram(raw){
+  if(!raw||typeof raw!=='object') throw new Error('program must be an object');
+  return {canvas:{...(raw.canvas||{})},post:{...(raw.post||{})},
+    layers:(raw.layers||[]).map(l=>{
+      const src=(l&&l.shape)||{},shape={type:src.type};
+      for(const p of src.params||[]){
+        if(!p||typeof p.name!=='string') continue;
+        shape[p.name]=aiCoerce(p.name,p.value);}
+      return {op:l&&l.op,shape};})};
 }
 /* Built from the same tables, for the same reason. */
 function aiSystem(){
@@ -1766,6 +1807,19 @@ function aiSystem(){
     'Layers compose in order. The first layer is always "set"; later layers use',
     'union, intersect, xor or subtract. Give each shape only the parameters that',
     'primitive takes.',
+    'A program has at most '+DSL_MAX_LAYERS+' layers. That is a hard limit and a',
+    'program with more is thrown away whole, so compose the idea within it —',
+    'a subject that seems to want more layers wants a simpler reading of itself,',
+    'not another layer.',
+    '',
+    'A shape carries its parameters as a list of name/value pairs, and every',
+    'value is written as a string — {"type":"diagonal","params":[',
+    '{"name":"dx","value":"1"},{"name":"period","value":"8"}]}. Omit the pair',
+    'entirely rather than inventing a value for a parameter the primitive',
+    'does not take.',
+    'Values that are not numbers: '+
+      Object.entries(AI_ENUMS).map(([k,v])=>k+' '+v.join('/')).join(', ')+
+      ', blue true/false, glyphs up to 8 letters or digits.',
     '',
     'Leave canvas.autoSize true unless the user asks for an exact size: the canvas',
     'is then sized to a common multiple of every layer\'s period, which is what',
@@ -1822,9 +1876,10 @@ async function aiWrite(desc,fetchImpl){
   if(data.stop_reason==='refusal') throw new Error('The model declined this request');
   const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
   if(!text) throw new Error('The model returned nothing to render');
-  let prog;
-  try{ prog=JSON.parse(text); }
+  let raw;
+  try{ raw=JSON.parse(text); }
   catch{ throw new Error('The model did not return a program'); }
+  const prog=aiToProgram(raw);          // pair lists back into flat shapes
   dslValidate(prog);                    // throws with a readable reason
   return prog;
 }

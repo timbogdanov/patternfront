@@ -134,9 +134,15 @@ def main() -> int:
 
     print("\n=== packaging ===")
     yml = read_root("electron-builder.yml")
-    chk("mac builds both architectures", "arch: [arm64, x64]" in yml)
-    chk("windows gets an installer and a portable build",
-        "target: nsis" in yml and "target: portable" in yml)
+    # One file per platform, on purpose. Shipping two DMGs and two zips left
+    # people with "PatternFront 2" and "PatternFront 3" in Finder — macOS
+    # numbering duplicate copies — with nothing to say which was which.
+    chk("macOS ships one artifact: the Apple silicon dmg",
+        "- target: dmg" in yml and "arch: [arm64]" in yml
+        and "target: zip" not in yml and "arch: [arm64, x64]" not in yml)
+    chk("windows ships one artifact: the x64 installer",
+        "target: nsis" in yml and "arch: [x64]" in yml
+        and "target: portable" not in yml)
     chk("only the app ships, not the repo",
         "- electron/**/*" in yml and "- app/**/*" in yml and "tools/" not in yml)
     chk("signing is wired but inert", "hardenedRuntime: false" in yml

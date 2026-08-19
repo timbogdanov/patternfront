@@ -558,9 +558,12 @@ function duotoneTests() {
 async function aiTests() {
   console.log('\n=== writing a program with a model ===');
 
+  // The wire format: parameters as name/value pairs, every value a string.
+  const pairs = (o) => Object.entries(o).map(([name, value]) => ({ name, value: String(value) }));
   const GOOD = {
     canvas: { width: 32, height: 32, scale: 1, autoSize: true },
-    layers: [{ op: 'set', shape: { type: 'diagonal', dx: 1, dy: 1, period: 8, thickness: 3 } }],
+    layers: [{ op: 'set', shape: { type: 'diagonal',
+                                   params: pairs({ dx: 1, dy: 1, period: 8, thickness: 3 }) } }],
     post: { mirrorX: false, mirrorY: false, rotate90: 0, invert: false },
   };
   const reply = (body, ok = true, status = 200) => async () => ({
@@ -580,6 +583,8 @@ async function aiTests() {
     grabConst('F57'), grabConst('F35'),
     grabFunction('dslValidateShape'), grabFunction('dslValidate'),
     grabConst('AI_URL'), grabConst('AI_MODEL'), grabConst('AI_KEY'),
+    grabConst('AI_ENUMS'), grabConst('AI_BOOLS'), grabConst('AI_NUMS'), grabConst('AI_PARAMS'),
+    grabFunction('aiCoerce'), grabFunction('aiToProgram'),
     grabFunction('aiSchema'), grabFunction('aiSystem'),
     grabConst('aiKey'), grabFunction('aiWrite'),
   ].join('\n'));
@@ -620,11 +625,60 @@ async function aiTests() {
       shapeEnum.length === primitiveCount, `${shapeEnum.length} primitives`);
   chk('the prompt names the primitives too',
       ctx.aiSystem().includes('diagonal') && ctx.aiSystem().includes('halftone'));
+  // Every limit dslValidate can throw on has to be in the prompt, or the model
+  // writes something reasonable and the whole reply is binned. "city skyline"
+  // came back with more than DSL_MAX_LAYERS layers and the user got "too many
+  // layers" — the cap was the one bound the prompt never mentioned.
+  const maxLayers = vm.runInContext('DSL_MAX_LAYERS', ctx);
+  chk('the prompt states the layer cap the validator enforces',
+      ctx.aiSystem().includes(`at most ${maxLayers} layers`),
+      `cap is ${maxLayers}`);
+
+  // Structured outputs compile the schema into a grammar, and the service caps
+  // a schema at 24 OPTIONAL parameters. The first version of this schema hung
+  // every DSL parameter off one shape object — 38 properties with only `type`
+  // required — so all 37 optional ones came back as a 400 that no user could
+  // act on and the whole feature was dead. Counting them here is what stops a
+  // new primitive or parameter from quietly doing it again.
+  const optionals = (node) => {
+    if (!node || typeof node !== 'object') return 0;
+    let n = 0;
+    if (node.properties) {
+      const req = new Set(node.required || []);
+      n += Object.keys(node.properties).filter(k => !req.has(k)).length;
+      for (const v of Object.values(node.properties)) n += optionals(v);
+    }
+    if (node.items) n += optionals(node.items);
+    return n;
+  };
+  const optCount = optionals(schema);
+  chk('the schema stays under the service\'s optional-parameter limit',
+      optCount <= 24, `${optCount} optional, limit 24`);
 
   // A well-formed reply is validated, not trusted.
   const prog = await aiWrite('diagonal stripes', reply(asText(GOOD)));
   chk('a well-formed program comes back validated',
       prog.layers[0].shape.type === 'diagonal' && prog.layers[0].op === 'set');
+  // The pair list is a wire format, not something the renderer or the Program
+  // box ever sees: what comes back must be an ordinary flat shape, with numbers
+  // that are numbers. A "8" reaching dslRender would clamp and tile wrong.
+  const sh = prog.layers[0].shape;
+  chk('pairs collapse into a flat shape the renderer speaks',
+      sh.dx === 1 && sh.period === 8 && sh.thickness === 3 && !('params' in sh),
+      JSON.stringify(sh));
+  chk('numeric parameters arrive as numbers, not strings',
+      typeof sh.period === 'number' && typeof sh.dx === 'number');
+  const bad = (name, value) => failed(reply(asText({
+    canvas: GOOD.canvas, post: GOOD.post,
+    layers: [{ op: 'set', shape: { type: 'diagonal', params: [{ name, value }] } }] })));
+  chk('a parameter that is not a number is named in the error',
+      (await bad('period', 'eight')) === 'period is not a number: "eight"',
+      String(await bad('period', 'eight')));
+  chk('a value outside an enumerated set is refused',
+      (await bad('axis', 'sideways')) === 'axis must be one of h, v, not "sideways"',
+      String(await bad('axis', 'sideways')));
+  chk('booleans survive the crossing',
+      ctx.aiCoerce('blue', 'true') === true && ctx.aiCoerce('blue', 'false') === false);
 
   // Every failure mode, in the order a user would meet them.
   chk('an unknown shape is rejected, not rendered',
@@ -652,6 +706,8 @@ async function aiTests() {
                           $: () => ({ hidden: false, disabled: false, value: '', innerHTML: '' }) });
   run(noKey, [grabConst('AI_KEY'), grabConst('aiKey'), grabConst('AI_URL'), grabConst('AI_MODEL'),
               grabConst('DSL_MIN_W'), grabConst('DSL_SHAPES'), grabConst('DSL_RANGES'),
+              grabConst('AI_ENUMS'), grabConst('AI_BOOLS'), grabConst('AI_NUMS'),
+              grabConst('AI_PARAMS'), grabFunction('aiCoerce'), grabFunction('aiToProgram'),
               grabFunction('aiSchema'), grabFunction('aiSystem'),
               grabConst('DSL_CANVAS_LOCKED'), grabConst('floorMod'), grabFunction('pyRound'),
               grabFunction('gcd'), grabFunction('lcm'), grabFunction('hash2'),

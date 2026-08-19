@@ -102,13 +102,15 @@ jobs:
           body: |
             ## Install
 
-            **macOS** — download the `.dmg` for your chip (`arm64` for Apple
-            silicon, `x64` for Intel). These builds are **unsigned**, so the
-            first launch needs: right-click the app → **Open** → **Open**.
+            **macOS** (Apple silicon) — open the `.dmg` and drag PatternFront
+            to Applications, then open it *from there*. These builds are
+            **unsigned**, so the first launch needs: right-click → **Open** →
+            **Open**. Opening it from the mounted image instead runs it
+            translocated from a random read-only path, and the copy left in
+            Downloads is what Finder later numbers "PatternFront 2".
 
-            **Windows** — run the `Setup` installer, or use the portable
-            `.exe`. SmartScreen will show "Windows protected your PC" →
-            **More info** → **Run anyway**.
+            **Windows** — run the `Setup` installer. SmartScreen will show
+            "Windows protected your PC" → **More info** → **Run anyway**.
 
             Signing certificates cost money this project does not spend yet.
             If you would rather not trust an unsigned build, `npm run dist`

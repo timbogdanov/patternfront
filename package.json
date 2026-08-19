@@ -1,7 +1,7 @@
 {
   "name": "patternfront",
   "productName": "PatternFront",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A 1-bit pattern editor for OpenFront territory patterns \u2014 desktop app for macOS and Windows.",
   "keywords": [
     "pixel-art",
