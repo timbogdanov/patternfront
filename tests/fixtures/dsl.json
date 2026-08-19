@@ -610,7 +610,12 @@
    "height": 32,
    "scale": 1,
    "ink": 512,
-   "patternData": "APF4Dw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8"
+   "patternData": "APF4Dw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8",
+   "seam": [
+    1.0,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:stripes_h",
@@ -638,7 +643,12 @@
    "height": 30,
    "scale": 1,
    "ink": 480,
-   "patternData": "APFw________________AAAAAAAAAAAAAAAA________________AAAAAAAAAAAAAAAA________________AAAAAAAAAAAAAAAA________________AAAAAAAAAAAAAAAA________________AAAAAAAAAAAAAAAA"
+   "patternData": "APFw________________AAAAAAAAAAAAAAAA________________AAAAAAAAAAAAAAAA________________AAAAAAAAAAAAAAAA________________AAAAAAAAAAAAAAAA________________AAAAAAAAAAAAAAAA",
+   "seam": [
+    0.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:diagonal",
@@ -667,7 +677,12 @@
    "height": 32,
    "scale": 1,
    "ink": 640,
-   "patternData": "APF4Hx8fHz4-Pj58fHx8-Pj4-PHx8fHj4-Pjx8fHx4-Pj48fHx8fPj4-Pnx8fHz4-Pj48fHx8ePj4-PHx8fHj4-Pjx8fHx8-Pj4-fHx8fPj4-Pjx8fHx4-Pj48fHx8ePj4-PHx8fHz4-Pj58fHx8-Pj4-PHx8fHj4-Pjx8fHx4-Pj48"
+   "patternData": "APF4Hx8fHz4-Pj58fHx8-Pj4-PHx8fHj4-Pjx8fHx4-Pj48fHx8fPj4-Pnx8fHz4-Pj48fHx8ePj4-PHx8fHj4-Pjx8fHx8-Pj4-fHx8fPj4-Pjx8fHx4-Pj48fHx8ePj4-PHx8fHz4-Pj58fHx8-Pj4-PHx8fHj4-Pjx8fHx4-Pj48",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:diagonal_steep",
@@ -696,7 +711,12 @@
    "height": 32,
    "scale": 1,
    "ink": 384,
-   "patternData": "APF4BwcHBxwcHBxwcHBwwcHBwQcHBwccHBwccHBwcMHBwcEHBwcHHBwcHHBwcHDBwcHBBwcHBxwcHBxwcHBwwcHBwQcHBwccHBwccHBwcMHBwcEHBwcHHBwcHHBwcHDBwcHBBwcHBxwcHBxwcHBwwcHBwQcHBwccHBwccHBwcMHBwcE"
+   "patternData": "APF4BwcHBxwcHBxwcHBwwcHBwQcHBwccHBwccHBwcMHBwcEHBwcHHBwcHHBwcHDBwcHBBwcHBxwcHBxwcHBwwcHBwQcHBwccHBwccHBwcMHBwcEHBwcHHBwcHHBwcHDBwcHBBwcHBxwcHBxwcHBwwcHBwQcHBwccHBwccHBwcMHBwcE",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:checker",
@@ -723,7 +743,12 @@
    "height": 32,
    "scale": 1,
    "ink": 512,
-   "patternData": "APF48PDw8PDw8PDw8PDw8PDw8A8PDw8PDw8PDw8PDw8PDw_w8PDw8PDw8PDw8PDw8PDwDw8PDw8PDw8PDw8PDw8PD_Dw8PDw8PDw8PDw8PDw8PAPDw8PDw8PDw8PDw8PDw8P8PDw8PDw8PDw8PDw8PDw8A8PDw8PDw8PDw8PDw8PDw8"
+   "patternData": "APF48PDw8PDw8PDw8PDw8PDw8A8PDw8PDw8PDw8PDw8PDw_w8PDw8PDw8PDw8PDw8PDwDw8PDw8PDw8PDw8PDw8PD_Dw8PDw8PDw8PDw8PDw8PAPDw8PDw8PDw8PDw8PDw8P8PDw8PDw8PDw8PDw8PDw8A8PDw8PDw8PDw8PDw8PDw8",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:checker_tall",
@@ -750,7 +775,12 @@
    "height": 30,
    "scale": 1,
    "ink": 450,
-   "patternData": "AOFwOI7jOI7jOI7jOI7jOI7jOI7j-HEcx3Ecx3Ecx3Ecx3Ecx3Ecx4HjOI7jOI7jOI7jOI7jOI7jOI4fx3Ecx3Ecx3Ecx3Ecx3Ecx3EcOI7jOI7jOI7jOI7jOI7jOI7j-HEcx3Ecx3Ecx3Ecx3Ecx3EcxwE"
+   "patternData": "AOFwOI7jOI7jOI7jOI7jOI7jOI7j-HEcx3Ecx3Ecx3Ecx3Ecx3Ecx4HjOI7jOI7jOI7jOI7jOI7jOI4fx3Ecx3Ecx3Ecx3Ecx3Ecx3EcOI7jOI7jOI7jOI7jOI7jOI7j-HEcx3Ecx3Ecx3Ecx3Ecx3EcxwE",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:grid",
@@ -779,7 +809,12 @@
    "height": 32,
    "scale": 1,
    "ink": 240,
-   "patternData": "APF4_____wEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH_____AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAf____8BAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB_____wEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE"
+   "patternData": "APF4_____wEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH_____AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAf____8BAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB_____wEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:dots",
@@ -807,7 +842,12 @@
    "height": 32,
    "scale": 1,
    "ink": 208,
-   "patternData": "APF4AAAAAAAAAAAQEBAQODg4OHx8fHw4ODg4EBAQEAAAAAAAAAAAAAAAABAQEBA4ODg4fHx8fDg4ODgQEBAQAAAAAAAAAAAAAAAAEBAQEDg4ODh8fHx8ODg4OBAQEBAAAAAAAAAAAAAAAAAQEBAQODg4OHx8fHw4ODg4EBAQEAAAAAA"
+   "patternData": "APF4AAAAAAAAAAAQEBAQODg4OHx8fHw4ODg4EBAQEAAAAAAAAAAAAAAAABAQEBA4ODg4fHx8fDg4ODgQEBAQAAAAAAAAAAAAAAAAEBAQEDg4ODh8fHx8ODg4OBAQEBAAAAAAAAAAAAAAAAAQEBAQODg4OHx8fHw4ODg4EBAQEAAAAAA",
+   "seam": [
+    0.0,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:dots_brick",
@@ -836,7 +876,12 @@
    "height": 32,
    "scale": 1,
    "ink": 208,
-   "patternData": "APF4AAAAAAAAAAAQEBAQODg4OHx8fHw4ODg4EBAQEAAAAAAAAAAAAAAAAAEBAQGDg4ODx8fHx4ODg4MBAQEBAAAAAAAAAAAAAAAAEBAQEDg4ODh8fHx8ODg4OBAQEBAAAAAAAAAAAAAAAAABAQEBg4ODg8fHx8eDg4ODAQEBAQAAAAA"
+   "patternData": "APF4AAAAAAAAAAAQEBAQODg4OHx8fHw4ODg4EBAQEAAAAAAAAAAAAAAAAAEBAQGDg4ODx8fHx4ODg4MBAQEBAAAAAAAAAAAAAAAAEBAQEDg4ODh8fHx8ODg4OBAQEBAAAAAAAAAAAAAAAAABAQEBg4ODg8fHx8eDg4ODAQEBAQAAAAA",
+   "seam": [
+    0.6666666666666666,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:dots_sparse",
@@ -866,7 +911,12 @@
    "height": 24,
    "scale": 1,
    "ink": 78,
-   "patternData": "ABFZAAAAAAAAAAAAAAAAAAAAAAAAQAAEQAAO4AAO8AEf8AEO4AAOQAAEQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARAAATCAAziAB3zABzyAAziAARAAAQAAAAAAAAAAAAAAAAAA"
+   "patternData": "ABFZAAAAAAAAAAAAAAAAAAAAAAAAQAAEQAAO4AAO8AEf8AEO4AAOQAAEQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARAAATCAAziAB3zABzyAAziAARAAAQAAAAAAAAAAAAAAAAAA",
+   "seam": [
+    1.0,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:brick",
@@ -895,7 +945,12 @@
    "height": 32,
    "scale": 1,
    "ink": 352,
-   "patternData": "APF4_____wEBAQEBAQEBAQEBAf____8QEBAQEBAQEBAQEBD_____AQEBAQEBAQEBAQEB_____xAQEBAQEBAQEBAQEP____8BAQEBAQEBAQEBAQH_____EBAQEBAQEBAQEBAQ_____wEBAQEBAQEBAQEBAf____8QEBAQEBAQEBAQEBA"
+   "patternData": "APF4_____wEBAQEBAQEBAQEBAf____8QEBAQEBAQEBAQEBD_____AQEBAQEBAQEBAQEB_____xAQEBAQEBAQEBAQEP____8BAQEBAQEBAQEBAQH_____EBAQEBAQEBAQEBAQ_____wEBAQEBAQEBAQEBAf____8QEBAQEBAQEBAQEBA",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:wave",
@@ -924,7 +979,12 @@
    "height": 30,
    "scale": 1,
    "ink": 320,
-   "patternData": "APFwAYMBg4MBgwHGAMYAfDh8ODh8OHwAxgDGAYMBg4MBgwHGAMYAfDh8ODh8OHwAxgDGAYMBg4MBgwHGAMYAfDh8ODh8OHwAxgDGAYMBg4MBgwHGAMYAfDh8ODh8OHwAxgDGAYMBg4MBgwHGAMYAfDh8ODh8OHwAxgDG"
+   "patternData": "APFwAYMBg4MBgwHGAMYAfDh8ODh8OHwAxgDGAYMBg4MBgwHGAMYAfDh8ODh8OHwAxgDGAYMBg4MBgwHGAMYAfDh8ODh8OHwAxgDGAYMBg4MBgwHGAMYAfDh8ODh8OHwAxgDGAYMBg4MBgwHGAMYAfDh8ODh8OHwAxgDG",
+   "seam": [
+    1.0,
+    0.5
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:zigzag",
@@ -953,7 +1013,12 @@
    "height": 30,
    "scale": 1,
    "ink": 320,
-   "patternData": "APFwRERERERERESCgoKCk5OTkzk5OTkoKCgoRERERERERESCgoKCk5OTkzk5OTkoKCgoRERERERERESCgoKCk5OTkzk5OTkoKCgoRERERERERESCgoKCk5OTkzk5OTkoKCgoRERERERERESCgoKCk5OTkzk5OTkoKCgo"
+   "patternData": "APFwRERERERERESCgoKCk5OTkzk5OTkoKCgoRERERERERESCgoKCk5OTkzk5OTkoKCgoRERERERERESCgoKCk5OTkzk5OTkoKCgoRERERERERESCgoKCk5OTkzk5OTkoKCgoRERERERERESCgoKCk5OTkzk5OTkoKCgo",
+   "seam": [
+    0.5,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:triangles",
@@ -979,7 +1044,12 @@
    "height": 32,
    "scale": 1,
    "ink": 576,
-   "patternData": "APF4gAGAAcADwAPgB-AH8A_wD_gf-B_8P_w__n_-f_____-AAYABwAPAA-AH4AfwD_AP-B_4H_w__D_-f_5______4ABgAHAA8AD4AfgB_AP8A_4H_gf_D_8P_5__n______gAGAAcADwAPgB-AH8A_wD_gf-B_8P_w__n_-f_____8"
+   "patternData": "APF4gAGAAcADwAPgB-AH8A_wD_gf-B_8P_w__n_-f_____-AAYABwAPAA-AH4AfwD_AP-B_4H_w__D_-f_5______4ABgAHAA8AD4AfgB_AP8A_4H_gf_D_8P_5__n______gAGAAcADwAPgB-AH8A_wD_gf-B_8P_w__n_-f_____8",
+   "seam": [
+    0.0,
+    7.0
+   ],
+   "seamLabel": "Visible seam"
   },
   {
    "name": "gallery:rings",
@@ -1006,7 +1076,12 @@
    "height": 32,
    "scale": 1,
    "ink": 508,
-   "patternData": "APF4-D_4Px7wHvAGwAbA44_jj_Of8585ODk4GTAZMJkzmTOZM5kzmTOZMxkwGTA5ODk485_zn-OP448GwAbAHvAe8Pg_-D8e8B7wBsAGwOOP44_zn_OfOTg5OBkwGTCZM5kzmTOZM5kzmTMZMBkwOTg5OPOf85_jj-OPBsAGwB7wHvA"
+   "patternData": "APF4-D_4Px7wHvAGwAbA44_jj_Of8585ODk4GTAZMJkzmTOZM5kzmTOZMxkwGTA5ODk485_zn-OP448GwAbAHvAe8Pg_-D8e8B7wBsAGwOOP44_zn_OfOTg5OBkwGTCZM5kzmTOZM5kzmTMZMBkwOTg5OPOf85_jj-OPBsAGwB7wHvA",
+   "seam": [
+    1.1,
+    1.1
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:halftone",
@@ -1033,7 +1108,12 @@
    "height": 32,
    "scale": 1,
    "ink": 592,
-   "patternData": "APF4AAAAADg4ODh8fHx8_v7-_v7-_v7-_v7-fHx8fDg4ODgAAAAAODg4OHx8fHz-_v7-_v7-_v7-_v58fHx8ODg4OAAAAAA4ODg4fHx8fP7-_v7-_v7-_v7-_nx8fHw4ODg4AAAAADg4ODh8fHx8_v7-_v7-_v7-_v7-fHx8fDg4ODg"
+   "patternData": "APF4AAAAADg4ODh8fHx8_v7-_v7-_v7-_v7-fHx8fDg4ODgAAAAAODg4OHx8fHz-_v7-_v7-_v7-_v58fHx8ODg4OAAAAAA4ODg4fHx8fP7-_v7-_v7-_v7-_nx8fHw4ODg4AAAAADg4ODh8fHx8_v7-_v7-_v7-_v7-fHx8fDg4ODg",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:halftone_45",
@@ -1061,7 +1141,12 @@
    "height": 32,
    "scale": 1,
    "ink": 400,
-   "patternData": "APF4AAAAAAAAAAB8fHx8fHx8fHx8fHx8fHx8fHx8fAAAAAAAAAAAAAAAAMfHx8fHx8fHx8fHx8fHx8fHx8fHAAAAAAAAAAAAAAAAfHx8fHx8fHx8fHx8fHx8fHx8fHwAAAAAAAAAAAAAAADHx8fHx8fHx8fHx8fHx8fHx8fHxwAAAAA"
+   "patternData": "APF4AAAAAAAAAAB8fHx8fHx8fHx8fHx8fHx8fHx8fAAAAAAAAAAAAAAAAMfHx8fHx8fHx8fHx8fHx8fHx8fHAAAAAAAAAAAAAAAAfHx8fHx8fHx8fHx8fHx8fHx8fHwAAAAAAAAAAAAAAADHx8fHx8fHx8fHx8fHx8fHx8fHxwAAAAA",
+   "seam": [
+    0.0,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:noise",
@@ -1088,7 +1173,12 @@
    "height": 16,
    "scale": 1,
    "ink": 80,
-   "patternData": "AHE4BIDCscBiYAAUQcwgBRCoSuCoNBBJCBiHcDAwNmBplro"
+   "patternData": "AHE4BIDCscBiYAAUQcwgBRCoSuCoNBBJCBiHcDAwNmBplro",
+   "seam": [
+    0.813953488372093,
+    0.7777777777777778
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:noise_blue",
@@ -1116,7 +1206,12 @@
    "height": 16,
    "scale": 1,
    "ink": 80,
-   "patternData": "AHE4ooJIVZEKQlCRIApJlRRKSKUQEqShUlKFhCpJEBKERSg"
+   "patternData": "AHE4ooJIVZEKQlCRIApJlRRKSKUQEqShUlKFhCpJEBKERSg",
+   "seam": [
+    0.9016393442622951,
+    0.9090909090909091
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:text",
@@ -1144,7 +1239,12 @@
    "height": 36,
    "scale": 1,
    "ink": 400,
-   "patternData": "ABGJ0fNEz5NEURJFRRQVUTREzxA9RVQUUZFESRIl0RNFTwQAAAAAAAAAABA9T_Q8SRQlUVREURFFQ_QM0VNERREVSZQkURI9UfREAAAAAAAAAAAA0fNEz5NEURJFRRQVUTREzxA9RVQUUZFESRIl0RNFTwQAAAAAAAAAABA9T_Q8SRQlUVREURFFQ_QM0VNERREVSZQkURI9UfREAAAAAAAAAAAA"
+   "patternData": "ABGJ0fNEz5NEURJFRRQVUTREzxA9RVQUUZFESRIl0RNFTwQAAAAAAAAAABA9T_Q8SRQlUVREURFFQ_QM0VNERREVSZQkURI9UfREAAAAAAAAAAAA0fNEz5NEURJFRRQVUTREzxA9RVQUUZFESRIl0RNFTwQAAAAAAAAAABA9T_Q8SRQlUVREURFFQ_QM0VNERREVSZQkURI9UfREAAAAAAAAAAAA",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:text_small",
@@ -1172,7 +1272,12 @@
    "height": 35,
    "scale": 1,
    "ink": 320,
-   "patternData": "APGEcnJychUVFRU1NTU1FRUVFRISEhIAAAAAAAAAAHJycnIVFRUVNTU1NRUVFRUSEhISAAAAAAAAAABycnJyFRUVFTU1NTUVFRUVEhISEgAAAAAAAAAAcnJychUVFRU1NTU1FRUVFRISEhIAAAAAAAAAAHJycnIVFRUVNTU1NRUVFRUSEhISAAAAAAAAAAA"
+   "patternData": "APGEcnJychUVFRU1NTU1FRUVFRISEhIAAAAAAAAAAHJycnIVFRUVNTU1NRUVFRUSEhISAAAAAAAAAABycnJyFRUVFTU1NTUVFRUVEhISEgAAAAAAAAAAcnJychUVFRU1NTU1FRUVFRISEhIAAAAAAAAAAHJycnIVFRUVNTU1NRUVFRUSEhISAAAAAAAAAAA",
+   "seam": [
+    0.6,
+    0.8
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:border",
@@ -1199,7 +1304,12 @@
    "height": 16,
    "scale": 1,
    "ink": 44,
-   "patternData": "AHE4AAAAAPw_BCAEIAQgBCAEIAQgBCAEIAQgBCD8PwAAAAA"
+   "patternData": "AHE4AAAAAPw_BCAEIAQgBCAEIAQgBCAEIAQgBCD8PwAAAAA",
+   "seam": [
+    0.0,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:solid",
@@ -1224,7 +1334,12 @@
    "height": 8,
    "scale": 3,
    "ink": 64,
-   "patternData": "ADMY__________8"
+   "patternData": "ADMY__________8",
+   "seam": [
+    0.0,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:chainlink",
@@ -1263,7 +1378,12 @@
    "height": 32,
    "scale": 1,
    "ink": 256,
-   "patternData": "APF4AwMDAwYGBgYMDAwMGBgYGDAwMDBgYGBgwMDAwIGBgYEDAwMDBgYGBgwMDAwYGBgYMDAwMGBgYGDAwMDAgYGBgQMDAwMGBgYGDAwMDBgYGBgwMDAwYGBgYMDAwMCBgYGBAwMDAwYGBgYMDAwMGBgYGDAwMDBgYGBgwMDAwIGBgYE"
+   "patternData": "APF4AwMDAwYGBgYMDAwMGBgYGDAwMDBgYGBgwMDAwIGBgYEDAwMDBgYGBgwMDAwYGBgYMDAwMGBgYGDAwMDAgYGBgQMDAwMGBgYGDAwMDBgYGBgwMDAwYGBgYMDAwMCBgYGBAwMDAwYGBgYMDAwMGBgYGDAwMDBgYGBgwMDAwIGBgYE",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:plaid",
@@ -1300,7 +1420,12 @@
    "height": 30,
    "scale": 1,
    "ink": 440,
-   "patternData": "APFw-Pj4-Pj4-PgHBwcHBwcHBwcHBwcHBwcH-Pj4-Pj4-PgHBwcHBwcHBwcHBwcHBwcH-Pj4-Pj4-PgHBwcHBwcHBwcHBwcHBwcH-Pj4-Pj4-PgHBwcHBwcHBwcHBwcHBwcH-Pj4-Pj4-PgHBwcHBwcHBwcHBwcHBwcH"
+   "patternData": "APFw-Pj4-Pj4-PgHBwcHBwcHBwcHBwcHBwcH-Pj4-Pj4-PgHBwcHBwcHBwcHBwcHBwcH-Pj4-Pj4-PgHBwcHBwcHBwcHBwcHBwcH-Pj4-Pj4-PgHBwcHBwcHBwcHBwcHBwcH-Pj4-Pj4-PgHBwcHBwcHBwcHBwcHBwcH",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:dotted_grid",
@@ -1338,7 +1463,12 @@
    "height": 32,
    "scale": 1,
    "ink": 448,
-   "patternData": "APF4__________8DAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwP__________wMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA___________AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD__________8DAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM"
+   "patternData": "APF4__________8DAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwP__________wMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA___________AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD__________8DAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:houndstooth",
@@ -1375,7 +1505,12 @@
    "height": 32,
    "scale": 1,
    "ink": 640,
-   "patternData": "APF4_____-7u7u7MzMzMiIiIiP_____u7u7uzMzMzIiIiIj_____7u7u7szMzMyIiIiI_____-7u7u7MzMzMiIiIiP_____u7u7uzMzMzIiIiIj_____7u7u7szMzMyIiIiI_____-7u7u7MzMzMiIiIiP_____u7u7uzMzMzIiIiIg"
+   "patternData": "APF4_____-7u7u7MzMzMiIiIiP_____u7u7uzMzMzIiIiIj_____7u7u7szMzMyIiIiI_____-7u7u7MzMzMiIiIiP_____u7u7uzMzMzIiIiIj_____7u7u7szMzMyIiIiI_____-7u7u7MzMzMiIiIiP_____u7u7uzMzMzIiIiIg",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "gallery:inverted_waves",
@@ -1406,7 +1541,12 @@
    "height": 36,
    "scale": 1,
    "ink": 288,
-   "patternData": "APGIiIiIiBEREREiIiIiIiIiIiIiIiIRERERiIiIiEREREQiIiIiIiIiIiIiIiJEREREiIiIiBEREREiIiIiIiIiIiIiIiIRERERiIiIiEREREQiIiIiIiIiIiIiIiJEREREiIiIiBEREREiIiIiIiIiIiIiIiIRERERiIiIiEREREQiIiIiIiIiIiIiIiJERERE"
+   "patternData": "APGIiIiIiBEREREiIiIiIiIiIiIiIiIRERERiIiIiEREREQiIiIiIiIiIiIiIiJEREREiIiIiBEREREiIiIiIiIiIiIiIiIRERERiIiIiEREREQiIiIiIiIiIiIiIiJEREREiIiIiBEREREiIiIiIiIiIiIiIiIRERERiIiIiEREREQiIiIiIiIiIiIiIiJERERE",
+   "seam": [
+    0.5,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:solid_only",
@@ -1431,7 +1571,12 @@
    "height": 32,
    "scale": 1,
    "ink": 1024,
-   "patternData": "APF4__________________________________________________________________________________________________________________________________________________________________________8"
+   "patternData": "APF4__________________________________________________________________________________________________________________________________________________________________________8",
+   "seam": [
+    0.0,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:stripes_thin",
@@ -1460,7 +1605,12 @@
    "height": 35,
    "scale": 1,
    "ink": 320,
-   "patternData": "APGEAAAAAAAAAAAAAAAAAAAAAP__________AAAAAAAAAAAAAAAAAAAAAAAAAAD__________wAAAAAAAAAAAAAAAAAAAAAAAAAA__________8AAAAAAAAAAAAAAAAAAAAAAAAAAP__________AAAAAAAAAAAAAAAAAAAAAAAAAAD__________wAAAAA"
+   "patternData": "APGEAAAAAAAAAAAAAAAAAAAAAP__________AAAAAAAAAAAAAAAAAAAAAAAAAAD__________wAAAAAAAAAAAAAAAAAAAAAAAAAA__________8AAAAAAAAAAAAAAAAAAAAAAAAAAP__________AAAAAAAAAAAAAAAAAAAAAAAAAAD__________wAAAAA",
+   "seam": [
+    0.0,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:diagonal_steep",
@@ -1490,7 +1640,12 @@
    "height": 32,
    "scale": 1,
    "ink": 320,
-   "patternData": "AOF4MAzDcBiGYWgYhmEwDMMwMAzDcBiGYWgYhmEwDMMwMAzDcBiGYWgYhmEwDMMwMAzDcBiGYWgYhmEwDMMwMAzDcBiGYWgYhmEwDMMwMAzDcBiGYWgYhmEwDMMwMAzDcBiGYWgYhmEwDMMwMAzDcBiGYWgYhmEwDMMw"
+   "patternData": "AOF4MAzDcBiGYWgYhmEwDMMwMAzDcBiGYWgYhmEwDMMwMAzDcBiGYWgYhmEwDMMwMAzDcBiGYWgYhmEwDMMwMAzDcBiGYWgYhmEwDMMwMAzDcBiGYWgYhmEwDMMwMAzDcBiGYWgYhmEwDMMwMAzDcBiGYWgYhmEwDMMw",
+   "seam": [
+    0.5,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:checker_oblong",
@@ -1518,7 +1673,12 @@
    "height": 32,
    "scale": 1,
    "ink": 480,
-   "patternData": "AOF4H3zwwQcffAA--OCDDz74H3zwwQcffAA--OCDDz74H3zwwQcffAA--OCDDz74H3zwwQcffAA--OCDDz74H3zwwQcffAA--OCDDz74H3zwwQcffAA--OCDDz74H3zwwQcffAA--OCDDz74H3zwwQcffAA--OCDDz74"
+   "patternData": "AOF4H3zwwQcffAA--OCDDz74H3zwwQcffAA--OCDDz74H3zwwQcffAA--OCDDz74H3zwwQcffAA--OCDDz74H3zwwQcffAA--OCDDz74H3zwwQcffAA--OCDDz74H3zwwQcffAA--OCDDz74H3zwwQcffAA--OCDDz74",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:grid_thick",
@@ -1549,7 +1709,12 @@
    "height": 30,
    "scale": 1,
    "ink": 600,
-   "patternData": "ABFxgQMHDhw4cODA____________gQMHDhw4cODAgQMHDhw4cODA____________gQMHDhw4cODAgQMHDhw4cODA____________gQMHDhw4cODAgQMHDhw4cODA____________gQMHDhw4cODAgQMHDhw4cODA____________gQMHDhw4cODA"
+   "patternData": "ABFxgQMHDhw4cODA____________gQMHDhw4cODAgQMHDhw4cODA____________gQMHDhw4cODAgQMHDhw4cODA____________gQMHDhw4cODAgQMHDhw4cODA____________gQMHDhw4cODAgQMHDhw4cODA____________gQMHDhw4cODA",
+   "seam": [
+    0.0,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:dots_diamond",
@@ -1579,7 +1744,12 @@
    "height": 36,
    "scale": 1,
    "ink": 432,
-   "patternData": "AOGIIIAAAhxwwIEPPvjwxx9_-OCDDxxwwBFAAAEMOOCABx988OOPP37wwQcPOOCAIIAAAhxwwIEPPvjwxx9_-OCDDxxwwBFAAAEMOOCABx988OOPP37wwQcPOOCAIIAAAhxwwIEPPvjwxx9_-OCDDxxwwBFAAAEMOOCABx988OOPP37wwQcPOOCA"
+   "patternData": "AOGIIIAAAhxwwIEPPvjwxx9_-OCDDxxwwBFAAAEMOOCABx988OOPP37wwQcPOOCAIIAAAhxwwIEPPvjwxx9_-OCDDxxwwBFAAAEMOOCABx988OOPP37wwQcPOOCAIIAAAhxwwIEPPvjwxx9_-OCDDxxwwBFAAAEMOOCABx988OOPP37wwQcPOOCA",
+   "seam": [
+    0.25,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:dots_square_jitter",
@@ -1610,7 +1780,12 @@
    "height": 32,
    "scale": 1,
    "ink": 256,
-   "patternData": "APF4AAAAAAAA8AB4APB4eB7weHge8Hh4HgB4AB4AAAAAAAAAAAAAAAAAADwAAAA8ADwAPPA8PDzwPDwA8Dw8APAAPAAAAAAAAB4AAAAeAB4eHgAeHh4eHh4AHh4eAB4AAAAeAAAAAHg8AAB4PAAeeDwAHng8PB4AADweAAA8AAAAPAA"
+   "patternData": "APF4AAAAAAAA8AB4APB4eB7weHge8Hh4HgB4AB4AAAAAAAAAAAAAAAAAADwAAAA8ADwAPPA8PDzwPDwA8Dw8APAAPAAAAAAAAB4AAAAeAB4eHgAeHh4eHh4AHh4eAB4AAAAeAAAAAHg8AAB4PAAeeDwAHng8PB4AADweAAA8AAAAPAA",
+   "seam": [
+    0.0,
+    0.5
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:brick_offset",
@@ -1639,7 +1814,12 @@
    "height": 30,
    "scale": 1,
    "ink": 468,
-   "patternData": "AOFw_________z_AAAMMMMAAAwwwwP________8DBhhggAEGGGCAAfb_________MMAAAwwwwAADDDD8________vwEGGGCAAQYYYIAB_________w8wwAADDDDAAAMM8P________-DAQYYYIABBhhggAE"
+   "patternData": "AOFw_________z_AAAMMMMAAAwwwwP________8DBhhggAEGGGCAAfb_________MMAAAwwwwAADDDD8________vwEGGGCAAQYYYIAB_________w8wwAADDDDAAAMM8P________-DAQYYYIABBhhggAE",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:wave_vertical",
@@ -1669,7 +1849,12 @@
    "height": 28,
    "scale": 1,
    "ink": 336,
-   "patternData": "APFoODg4OHBwcHBwcHBwODg4OBwcHBwHBwcHwcHBweDg4OBwcHBwcHBwcODg4ODBwcHBBwcHBxwcHBw4ODg4cHBwcHBwcHA4ODg4HBwcHAcHBwfBwcHB4ODg4HBwcHBwcHBw4ODg4MHBwcEHBwcHHBwcHA"
+   "patternData": "APFoODg4OHBwcHBwcHBwODg4OBwcHBwHBwcHwcHBweDg4OBwcHBwcHBwcODg4ODBwcHBBwcHBxwcHBw4ODg4cHBwcHBwcHA4ODg4HBwcHAcHBwfBwcHB4ODg4HBwcHBwcHBw4ODg4MHBwcEHBwcHHBwcHA",
+   "seam": [
+    1.0,
+    0.5
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:zigzag_vertical",
@@ -1698,7 +1883,12 @@
    "height": 30,
    "scale": 1,
    "ink": 360,
-   "patternData": "APFwcHBwcBwcHBwODg4Og4ODg8HBwcFwcHBwwcHBwYODg4MODg4OHBwcHHBwcHAcHBwcDg4ODoODg4PBwcHBcHBwcMHBwcGDg4ODDg4ODhwcHBxwcHBwHBwcHA4ODg6Dg4ODwcHBwXBwcHDBwcHBg4ODgw4ODg4cHBwc"
+   "patternData": "APFwcHBwcBwcHBwODg4Og4ODg8HBwcFwcHBwwcHBwYODg4MODg4OHBwcHHBwcHAcHBwcDg4ODoODg4PBwcHBcHBwcMHBwcGDg4ODDg4ODhwcHBxwcHBwHBwcHA4ODg6Dg4ODwcHBwXBwcHDBwcHBg4ODgw4ODg4cHBwc",
+   "seam": [
+    0.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:triangles_down",
@@ -1725,7 +1915,12 @@
    "height": 30,
    "scale": 1,
    "ink": 630,
-   "patternData": "ABFx_____-9__ud__MM__IMf-IEf8AAP8AAGYAAG_____-9__ud__MM__IMf-IEf8AAP8AAGYAAG_____-9__ud__MM__IMf-IEf8AAP8AAGYAAG_____-9__ud__MM__IMf-IEf8AAP8AAGYAAG_____-9__ud__MM__IMf-IEf8AAP8AAGYAAG"
+   "patternData": "ABFx_____-9__ud__MM__IMf-IEf8AAP8AAGYAAG_____-9__ud__MM__IMf-IEf8AAP8AAGYAAG_____-9__ud__MM__IMf-IEf8AAP8AAGYAAG_____-9__ud__MM__IMf-IEf8AAP8AAGYAAG_____-9__ud__MM__IMf-IEf8AAP8AAGYAAG",
+   "seam": [
+    0.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:rings_offset",
@@ -1754,7 +1949,12 @@
    "height": 36,
    "scale": 1,
    "ink": 540,
-   "patternData": "ABGJgAM4gAMQAAEQH_ERH_ERH_ERH_ERH_ERH_ERH_ERHwEQAAEQgAM4gAN8wAd8_____w98wAd8gAM4gAMQAAEQH_ERH_ERH_ERH_ERH_ERH_ERH_ERHwEQAAEQgAM4gAN8wAd8_____w98wAd8gAM4gAMQAAEQH_ERH_ERH_ERH_ERH_ERH_ERH_ERHwEQAAEQgAM4gAN8wAd8_____w98wAd8"
+   "patternData": "ABGJgAM4gAMQAAEQH_ERH_ERH_ERH_ERH_ERH_ERH_ERHwEQAAEQgAM4gAN8wAd8_____w98wAd8gAM4gAMQAAEQH_ERH_ERH_ERH_ERH_ERH_ERH_ERHwEQAAEQgAM4gAN8wAd8_____w98wAd8gAM4gAMQAAEQH_ERH_ERH_ERH_ERH_ERH_ERH_ERHwEQAAEQgAM4gAN8wAd8_____w98wAd8",
+   "seam": [
+    0.7142857142857143,
+    0.2857142857142857
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:halftone_45",
@@ -1782,7 +1982,12 @@
    "height": 40,
    "scale": 1,
    "ink": 1044,
-   "patternData": "AOGY-OCDD3_88ee___7__________________________vvvP3_88XfwwQc__vjj33___f_________________________9998__vjj-OCDD3_88ee___7__________________________vvvP3_88XfwwQc__vjj33___f_________________________9998__vjj"
+   "patternData": "AOGY-OCDD3_88ee___7__________________________vvvP3_88XfwwQc__vjj33___f_________________________9998__vjj-OCDD3_88ee___7__________________________vvvP3_88XfwwQc__vjj33___f_________________________9998__vjj",
+   "seam": [
+    1.0,
+    4.0
+   ],
+   "seamLabel": "Visible seam"
   },
   {
    "name": "params:halftone_light",
@@ -1809,7 +2014,12 @@
    "height": 30,
    "scale": 1,
    "ink": 225,
-   "patternData": "AOFwAAAAAAAAAMBxHMdxHMdxHMdxHAAAAAAAAAAAAAAAHMdxHMdxHMdxHMcBAAAAAAAAAAAAAMBxHMdxHMdxHMdxHAAAAAAAAAAAAAAAHMdxHMdxHMdxHMcBAAAAAAAAAAAAAMBxHMdxHMdxHMdxHAAAAAA"
+   "patternData": "AOFwAAAAAAAAAMBxHMdxHMdxHMdxHAAAAAAAAAAAAAAAHMdxHMdxHMdxHMcBAAAAAAAAAAAAAMBxHMdxHMdxHMdxHAAAAAAAAAAAAAAAHMdxHMdxHMdxHMcBAAAAAAAAAAAAAMBxHMdxHMdxHMdxHAAAAAA",
+   "seam": [
+    0.0,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:noise_blue",
@@ -1837,7 +2047,12 @@
    "height": 32,
    "scale": 1,
    "ink": 218,
-   "patternData": "APF4IYUgKRIACQAoFBAiQKigBCACASAFoQAEIACCQABACAQkBFQSEYGoICQUBFARSUAgqBCECgIiKpWIBJAqAAAEgVKgAkKAREmkURCQAqAiKpACRAAJJJGKUAkKFQFAAKgoEoFUESBAIQRABFJSEQgFIYCQkARJIUgAEAAUhEhQAUA"
+   "patternData": "APF4IYUgKRIACQAoFBAiQKigBCACASAFoQAEIACCQABACAQkBFQSEYGoICQUBFARSUAgqBCECgIiKpWIBJAqAAAEgVKgAkKAREmkURCQAqAiKpACRAAJJJGKUAkKFQFAAKgoEoFUESBAIQRABFJSEQgFIYCQkARJIUgAEAAUhEhQAUA",
+   "seam": [
+    0.7647058823529411,
+    0.8823529411764706
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:noise_plain",
@@ -1864,7 +2079,12 @@
    "height": 32,
    "scale": 1,
    "ink": 611,
-   "patternData": "APF4v5Hv7ycn6trvzfu_X--3f_9fV_2yFKta_y1f2T-vsLkANHxvpyZpDu6D9nH7HsvPJc15Wpi7byElny3aeyZ3Xa89UZnjJxxCiu6B0cJuaqmin-m5RdiOyX-XfystxsG3yz7jQWW3WV3ur2XEkS82Vacns17_u9jD9XkQ739fZdc"
+   "patternData": "APF4v5Hv7ycn6trvzfu_X--3f_9fV_2yFKta_y1f2T-vsLkANHxvpyZpDu6D9nH7HsvPJc15Wpi7byElny3aeyZ3Xa89UZnjJxxCiu6B0cJuaqmin-m5RdiOyX-XfystxsG3yz7jQWW3WV3ur2XEkS82Vacns17_u9jD9XkQ739fZdc",
+   "seam": [
+    0.6666666666666666,
+    0.6842105263157895
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:text_3x5",
@@ -1893,7 +2113,12 @@
    "height": 32,
    "scale": 1,
    "ink": 192,
-   "patternData": "AOF44ogjTgkllFBGGWWUUEIJIoggAgAAAAAAAAAAAAAA4ogjTgkllFBGGWWUUEIJIoggAgAAAAAAAAAAAAAA4ogjTgkllFBGGWWUUEIJIoggAgAAAAAAAAAAAAAA4ogjTgkllFBGGWWUUEIJIoggAgAAAAAAAAAAAAAA"
+   "patternData": "AOF44ogjTgkllFBGGWWUUEIJIoggAgAAAAAAAAAAAAAA4ogjTgkllFBGGWWUUEIJIoggAgAAAAAAAAAAAAAA4ogjTgkllFBGGWWUUEIJIoggAgAAAAAAAAAAAAAA4ogjTgkllFBGGWWUUEIJIoggAgAAAAAAAAAAAAAA",
+   "seam": [
+    0.6,
+    0.8
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "params:text_5x7",
@@ -1922,7 +2147,12 @@
    "height": 32,
    "scale": 1,
    "ink": 352,
-   "patternData": "ABF5z-c8nxMFURREURBFQfQ83vN4QQAFARQESBAgQWAEgQEAAAAAz-c8nxMFURREURBFQfQ83vN4QQAFARQESBAgQWAEgQEAAAAAz-c8nxMFURREURBFQfQ83vN4QQAFARQESBAgQWAEgQEAAAAAz-c8nxMFURREURBFQfQ83vN4QQAFARQESBAgQWAEgQEAAAAA"
+   "patternData": "ABF5z-c8nxMFURREURBFQfQ83vN4QQAFARQESBAgQWAEgQEAAAAAz-c8nxMFURREURBFQfQ83vN4QQAFARQESBAgQWAEgQEAAAAAz-c8nxMFURREURBFQfQ83vN4QQAFARQESBAgQWAEgQEAAAAAz-c8nxMFURREURBFQfQ83vN4QQAFARQESBAgQWAEgQEAAAAA",
+   "seam": [
+    1.4,
+    0.9230769230769231
+   ],
+   "seamLabel": "Slight seam"
   },
   {
    "name": "params:border_inset",
@@ -1949,7 +2179,12 @@
    "height": 32,
    "scale": 1,
    "ink": 192,
-   "patternData": "APF4AAAAAAAAAAAAAAAA-P__H_j__x8YAAAYGAAAGBgAABgYAAAYGAAAGBgAABgYAAAYGAAAGBgAABgYAAAYGAAAGBgAABgYAAAYGAAAGBgAABgYAAAYGAAAGBgAABgYAAAYGAAAGBgAABgYAAAY-P__H_j__x8AAAAAAAAAAAAAAAA"
+   "patternData": "APF4AAAAAAAAAAAAAAAA-P__H_j__x8YAAAYGAAAGBgAABgYAAAYGAAAGBgAABgYAAAYGAAAGBgAABgYAAAYGAAAGBgAABgYAAAYGAAAGBgAABgYAAAYGAAAGBgAABgYAAAYGAAAGBgAABgYAAAY-P__H_j__x8AAAAAAAAAAAAAAAA",
+   "seam": [
+    0.0,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "op:set",
@@ -1986,7 +2221,12 @@
    "height": 30,
    "scale": 1,
    "ink": 640,
-   "patternData": "APFw_____________________wAAAAAAAAAA_____________________wAAAAAAAAAA_____________________wAAAAAAAAAA_____________________wAAAAAAAAAA_____________________wAAAAAAAAAA"
+   "patternData": "APFw_____________________wAAAAAAAAAA_____________________wAAAAAAAAAA_____________________wAAAAAAAAAA_____________________wAAAAAAAAAA_____________________wAAAAAAAAAA",
+   "seam": [
+    0.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "op:union",
@@ -2023,7 +2263,12 @@
    "height": 30,
    "scale": 1,
    "ink": 840,
-   "patternData": "APFw_____________________x8fHx8fHx8f_____________________x8fHx8fHx8f_____________________x8fHx8fHx8f_____________________x8fHx8fHx8f_____________________x8fHx8fHx8f"
+   "patternData": "APFw_____________________x8fHx8fHx8f_____________________x8fHx8fHx8f_____________________x8fHx8fHx8f_____________________x8fHx8fHx8f_____________________x8fHx8fHx8f",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "op:intersect",
@@ -2060,7 +2305,12 @@
    "height": 30,
    "scale": 1,
    "ink": 400,
-   "patternData": "APFwHx8fHx8fHx8fHx8fHx8fHwAAAAAAAAAAHx8fHx8fHx8fHx8fHx8fHwAAAAAAAAAAHx8fHx8fHx8fHx8fHx8fHwAAAAAAAAAAHx8fHx8fHx8fHx8fHx8fHwAAAAAAAAAAHx8fHx8fHx8fHx8fHx8fHwAAAAAAAAAA"
+   "patternData": "APFwHx8fHx8fHx8fHx8fHx8fHwAAAAAAAAAAHx8fHx8fHx8fHx8fHx8fHwAAAAAAAAAAHx8fHx8fHx8fHx8fHx8fHwAAAAAAAAAAHx8fHx8fHx8fHx8fHx8fHwAAAAAAAAAAHx8fHx8fHx8fHx8fHx8fHwAAAAAAAAAA",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "op:xor",
@@ -2097,7 +2347,12 @@
    "height": 30,
    "scale": 1,
    "ink": 440,
-   "patternData": "APFw4ODg4ODg4ODg4ODg4ODg4B8fHx8fHx8f4ODg4ODg4ODg4ODg4ODg4B8fHx8fHx8f4ODg4ODg4ODg4ODg4ODg4B8fHx8fHx8f4ODg4ODg4ODg4ODg4ODg4B8fHx8fHx8f4ODg4ODg4ODg4ODg4ODg4B8fHx8fHx8f"
+   "patternData": "APFw4ODg4ODg4ODg4ODg4ODg4B8fHx8fHx8f4ODg4ODg4ODg4ODg4ODg4B8fHx8fHx8f4ODg4ODg4ODg4ODg4ODg4B8fHx8fHx8f4ODg4ODg4ODg4ODg4ODg4B8fHx8fHx8f4ODg4ODg4ODg4ODg4ODg4B8fHx8fHx8f",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "op:subtract",
@@ -2134,7 +2389,12 @@
    "height": 30,
    "scale": 1,
    "ink": 200,
-   "patternData": "APFwAAAAAAAAAAAAAAAAAAAAAB8fHx8fHx8fAAAAAAAAAAAAAAAAAAAAAB8fHx8fHx8fAAAAAAAAAAAAAAAAAAAAAB8fHx8fHx8fAAAAAAAAAAAAAAAAAAAAAB8fHx8fHx8fAAAAAAAAAAAAAAAAAAAAAB8fHx8fHx8f"
+   "patternData": "APFwAAAAAAAAAAAAAAAAAAAAAB8fHx8fHx8fAAAAAAAAAAAAAAAAAAAAAB8fHx8fHx8fAAAAAAAAAAAAAAAAAAAAAB8fHx8fHx8fAAAAAAAAAAAAAAAAAAAAAB8fHx8fHx8fAAAAAAAAAAAAAAAAAAAAAB8fHx8fHx8f",
+   "seam": [
+    1.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "post_mirrorX",
@@ -2163,7 +2423,12 @@
    "height": 30,
    "scale": 1,
    "ink": 540,
-   "patternData": "AOFwMMAAAx544MEPP_z4559_____PwwwwIAHHnjwww8__vnn3____w8DDDDggQce_PDDj3_--ff____DAAMMeOCBBz_88OOff_79____MMAAAx544MEPP_z4559_____PwwwwIAHHnjwww8__vnn3____w8"
+   "patternData": "AOFwMMAAAx544MEPP_z4559_____PwwwwIAHHnjwww8__vnn3____w8DDDDggQce_PDDj3_--ff____DAAMMeOCBBz_88OOff_79____MMAAAx544MEPP_z4559_____PwwwwIAHHnjwww8__vnn3____w8",
+   "seam": [
+    0.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "post_mirrorY",
@@ -2192,7 +2457,12 @@
    "height": 30,
    "scale": 1,
    "ink": 540,
-   "patternData": "AOFw____v3_--ccPP_zggQceMMAAw____--ff_7xww8_eOCBBwwwwPD____7559__PDDDx544AEDDDD8_____vnnHz_88IMHHnjAAAMM____v3_--ccPP_zggQceMMAAw____--ff_7xww8_eOCBBwwwwAA"
+   "patternData": "AOFw____v3_--ccPP_zggQceMMAAw____--ff_7xww8_eOCBBwwwwPD____7559__PDDDx544AEDDDD8_____vnnHz_88IMHHnjAAAMM____v3_--ccPP_zggQceMMAAw____--ff_7xww8_eOCBBwwwwAA",
+   "seam": [
+    0.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "post_both_mirrors",
@@ -2222,7 +2492,12 @@
    "height": 30,
    "scale": 1,
    "ink": 540,
-   "patternData": "AOFw____v3_--ccPP_zggQceMMAAw____--ff_7xww8_eOCBBwwwwPD____7559__PDDDx544AEDDDD8_____vnnHz_88IMHHnjAAAMM____v3_--ccPP_zggQceMMAAw____--ff_7xww8_eOCBBwwwwAA"
+   "patternData": "AOFw____v3_--ccPP_zggQceMMAAw____--ff_7xww8_eOCBBwwwwPD____7559__PDDDx544AEDDDD8_____vnnHz_88IMHHnjAAAMM____v3_--ccPP_zggQceMMAAw____--ff_7xww8_eOCBBwwwwAA",
+   "seam": [
+    0.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "post_rot90",
@@ -2251,7 +2526,12 @@
    "height": 30,
    "scale": 1,
    "ink": 540,
-   "patternData": "AOFwIYQQwhhjjHHOOee89957___________ee--dc845Y4wxRgghhBBCCCGMMcYY55xzznvvvff_________77333jnnnDPGGGOEEEIIIYQQwhhjjHHOOee89957___________ee--dc845Y4wxRgghhAA"
+   "patternData": "AOFwIYQQwhhjjHHOOee89957___________ee--dc845Y4wxRgghhBBCCCGMMcYY55xzznvvvff_________77333jnnnDPGGGOEEEIIIYQQwhhjjHHOOee89957___________ee--dc845Y4wxRgghhAA",
+   "seam": [
+    1.0,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "post_rot180",
@@ -2280,7 +2560,12 @@
    "height": 30,
    "scale": 1,
    "ink": 540,
-   "patternData": "AOFw____v3_--ccPP_zggQceMMAAw____--ff_7xww8_eOCBBwwwwPD____7559__PDDDx544AEDDDD8_____vnnHz_88IMHHnjAAAMM____v3_--ccPP_zggQceMMAAw____--ff_7xww8_eOCBBwwwwAA"
+   "patternData": "AOFw____v3_--ccPP_zggQceMMAAw____--ff_7xww8_eOCBBwwwwPD____7559__PDDDx544AEDDDD8_____vnnHz_88IMHHnjAAAMM____v3_--ccPP_zggQceMMAAw____--ff_7xww8_eOCBBwwwwAA",
+   "seam": [
+    0.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "post_rot270",
@@ -2309,7 +2594,12 @@
    "height": 30,
    "scale": 1,
    "ink": 540,
-   "patternData": "AOFwEEIIIcYYY8w555x77733_________--9995zzjnnGGOMMYQQQgghhBBijDHGnHPOuffee___________3nvvPeecc44xxhhDCCGEEEIIIcYYY8w555x77733_________--9995zzjnnGGOMMYQQQgg"
+   "patternData": "AOFwEEIIIcYYY8w555x77733_________--9995zzjnnGGOMMYQQQgghhBBijDHGnHPOuffee___________3nvvPeecc44xxhhDCCGEEEIIIcYYY8w555x77733_________--9995zzjnnGGOMMYQQQgg",
+   "seam": [
+    1.0,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "post_invert",
@@ -2338,7 +2628,12 @@
    "height": 30,
    "scale": 1,
    "ink": 360,
-   "patternData": "AOFwzz___OGHHz7wwAMHGGCAAAAAwPPPP3_44YcPPPDAAQYYIAAAAPD8888ffvjhAw88cIABBggAAAA8__zzhx9--MADDxxggAECAAAAzz___OGHHz7wwAMHGGCAAAAAwPPPP3_44YcPPPDAAQYYIAAAAAA"
+   "patternData": "AOFwzz___OGHHz7wwAMHGGCAAAAAwPPPP3_44YcPPPDAAQYYIAAAAPD8888ffvjhAw88cIABBggAAAA8__zzhx9--MADDxxggAECAAAAzz___OGHHz7wwAMHGGCAAAAAwPPPP3_44YcPPPDAAQYYIAAAAAA",
+   "seam": [
+    0.0,
+    1.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "post_rot90_invert",
@@ -2368,7 +2663,12 @@
    "height": 30,
    "scale": 1,
    "ink": 360,
-   "patternData": "AOFw3nvvPeecc44xxhhDCCGEAAAAAAAAAAAhhBBijDHGnHPOuffee--9995zzjnnGGOMMYQQQggAAAAAAAAAEEIIIcYYY8w555x777333nvvPeecc44xxhhDCCGEAAAAAAAAAAAhhBBijDHGnHPOuffeew8"
+   "patternData": "AOFw3nvvPeecc44xxhhDCCGEAAAAAAAAAAAhhBBijDHGnHPOuffee--9995zzjnnGGOMMYQQQggAAAAAAAAAEEIIIcYYY8w555x777333nvvPeecc44xxhhDCCGEAAAAAAAAAAAhhBBijDHGnHPOuffeew8",
+   "seam": [
+    1.0,
+    0.0
+   ],
+   "seamLabel": "Seamless"
   },
   {
    "name": "canvas:fixed",
@@ -2397,7 +2697,12 @@
    "height": 17,
    "scale": 3,
    "ink": 168,
-   "patternData": "AKs8h8Nhh8Mhh8MBh8MBh8MJh8MNh8MPh8MOh0MOhwMOhwMOhxMOhxsOhx8Ohx0OhxwOBw"
+   "patternData": "AKs8h8Nhh8Mhh8MBh8MBh8MJh8MNh8MPh8MOh0MOhwMOhwMOhxMOhxsOhx8Ohx0OhxwOBw",
+   "seam": [
+    3.0,
+    3.0
+   ],
+   "seamLabel": "Visible seam"
   },
   {
    "name": "canvas:limits",
@@ -2424,7 +2729,12 @@
    "height": 65,
    "scale": 0,
    "ink": 4192,
-   "patternData": "APj_qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgA"
+   "patternData": "APj_qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgA",
+   "seam": [
+    3.0,
+    3.0
+   ],
+   "seamLabel": "Visible seam"
   }
  ]
 }
