@@ -20,6 +20,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { editorJs, grabFunction } = require('./lib/extract');
 
 const ROOT = path.join(__dirname, '..');
 const APP = path.join(ROOT, 'app', 'patternfront.html');
@@ -31,36 +32,7 @@ if (!fs.existsSync(FIXTURES)) {
   process.exit(2);
 }
 
-const src = fs.readFileSync(APP, 'utf8');
-const js = [...src.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n');
-
-// Same extraction the behaviour suite uses: a backslash escapes the next
-// character, so `/\//g` is not mistaken for the start of a line comment.
-function matchBrace(text, from) {
-  let depth = 0;
-  for (let i = from; i < text.length; i++) {
-    const c = text[i];
-    if (c === '\\') { i++; continue; }
-    if (c === '/' && text[i + 1] === '/') { i = text.indexOf('\n', i); if (i < 0) break; continue; }
-    if (c === '/' && text[i + 1] === '*') { i = text.indexOf('*/', i) + 1; continue; }
-    if (c === "'" || c === '"' || c === '`') {
-      const q = c;
-      for (i++; i < text.length; i++) {
-        if (text[i] === '\\') { i++; continue; }
-        if (text[i] === q) break;
-      }
-      continue;
-    }
-    if (c === '{') depth++;
-    else if (c === '}') { depth--; if (depth === 0) return i; }
-  }
-  throw new Error('unbalanced braces from ' + from);
-}
-function grab(name) {
-  const at = js.indexOf(`function ${name}(`);
-  if (at < 0) throw new Error(`function ${name} not found in the editor`);
-  return js.slice(at, matchBrace(js, js.indexOf('{', js.indexOf(')', at))) + 1);
-}
+const js = editorJs();
 
 const ctx = {
   Uint8Array, Error,
@@ -68,7 +40,7 @@ const ctx = {
   atob: s => Buffer.from(s, 'base64').toString('binary'),
 };
 vm.createContext(ctx);
-vm.runInContext([grab('encodeOF'), grab('decodeOF')].join('\n'), ctx);
+vm.runInContext([grabFunction(js, 'encodeOF'), grabFunction(js, 'decodeOF')].join('\n'), ctx);
 const encodeOF = (w, h, s, b) => vm.runInContext('encodeOF', ctx)(w, h, s, b);
 const decodeOF = d => vm.runInContext('decodeOF', ctx)(d);
 
