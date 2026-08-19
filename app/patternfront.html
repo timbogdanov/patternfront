@@ -154,14 +154,26 @@ input[type=range]::-moz-range-track{height:0.4rem;background:var(--well);
   border:0.1rem solid var(--edge-dim)}
 input[type=range]::-moz-range-thumb{width:0.8rem;height:1.4rem;border-radius:0;
   background:var(--accent);border:0.1rem solid var(--accent-ink)}
-input[type=text]{height:1.8rem;background:var(--well);color:var(--text);
+/* One box for every field you type into. An attribute selector matches the
+   ATTRIBUTE, not the resolved type, so `input[type=text]` on its own skips
+   `type=password` and skips an <input> written without any type at all — both
+   of which are still text fields. Naming all three is what lets the markup
+   stop carrying inline copies of this rule. */
+input[type=text],input[type=password],input:not([type]),
+input[type=number],select{height:1.8rem;background:var(--well);color:var(--text);
   border:0.1rem solid var(--edge-dim);padding:0 0.4rem;
   font:400 var(--lbl)/1 var(--mono);min-width:0}
-input[type=number],select{height:1.8rem;background:var(--well);color:var(--text);
-  border:0.1rem solid var(--edge-dim);padding:0 0.4rem;font:400 var(--lbl)/1 var(--mono);
-  font-variant-numeric:tabular-nums}
+input[type=number],select{font-variant-numeric:tabular-nums}
 input[type=number]{width:4.2rem;text-align:center}
-input[type=number].wide{flex:1;width:auto;min-width:0}
+/* "Fill the rest of the row." Deliberately type-agnostic: as
+   `input[type=number].wide` it quietly did nothing for the API-key, prompt and
+   pattern-name fields, which sat at the default 20-character width with half
+   their row empty beside them. */
+.wide{flex:1;width:auto;min-width:0}
+/* body{user-select:none} stops a drag across the chrome from selecting labels,
+   but it is inherited into the form fields too — where it means you cannot
+   select the text you just typed, or double-click a pasted key to replace it. */
+input,textarea{-webkit-user-select:text;user-select:text}
 /* Flex children must be allowed to shrink, or a narrow column overflows
    instead of compressing. */
 .r>.b,.duo>.b,.r>select{min-width:0}
@@ -556,15 +568,11 @@ input[type=color]{width:100%;height:1.8rem;background:var(--well);
       Anthropic, never to this project. The program it writes lands in the box above,
       where you can read and edit it before rendering.</span>
     <div class="r"><input id="aiKey" type="password" placeholder="Anthropic API key" class="wide"
-      autocomplete="off" spellcheck="false"
-      style="background:var(--well);color:var(--text);border:0.1rem solid var(--edge-dim);
-      font:inherit;padding:0 0.4rem">
+      autocomplete="off" spellcheck="false">
       <button class="b" id="aiSave" style="flex:0 0 auto">Save</button>
       <button class="b" id="aiForget" style="flex:0 0 auto">Forget</button></div>
     <div class="r" id="aiAsk" hidden><input id="aiWhat" class="wide"
-      placeholder="diagonal stripes with a thin gap"
-      style="background:var(--well);color:var(--text);border:0.1rem solid var(--edge-dim);
-      font:inherit;padding:0 0.4rem">
+      placeholder="diagonal stripes with a thin gap">
       <button class="b go" id="aiGo" style="flex:0 0 auto">Write it</button></div>
     <span class="note" id="aiStat"></span>
   </div>
@@ -594,9 +602,7 @@ input[type=color]{width:100%;height:1.8rem;background:var(--well);
       <button class="b" id="ofJson">Copy JSON</button>
     </div>
     <span class="note" id="ofStat"></span>
-    <div class="r"><input id="ofName" placeholder="pattern name" class="wide"
-      style="background:var(--well);color:var(--text);border:0.1rem solid var(--edge-dim);
-      font:inherit;padding:0 0.4rem">
+    <div class="r"><input id="ofName" placeholder="pattern name" class="wide">
       <button class="b" id="ofEntry" style="flex:0 0 auto">cosmetics.json entry</button></div>
     <div class="data" id="ofEntryOut" hidden></div>
     <div class="r" style="margin-top:0.4rem">
@@ -2853,6 +2859,13 @@ async function saveDocument(saveAs){
 
 // The menu drives the same functions the buttons do — one implementation each,
 // so a menu item cannot drift from its on-screen twin.
+// True while a text field has focus. The desktop Edit menu owns Cmd+Z/X/C/V/A
+// for both the canvas and the fields; it has already asked the web contents to
+// do the text-editing half, so the canvas half must stand down — otherwise
+// fixing a typo in the key box undoes a brush stroke behind it.
+const typing=()=>{const a=document.activeElement;
+  const t=((a&&a.tagName)||'').toLowerCase();
+  return t==='input'||t==='textarea'||t==='select';};
 const COMMANDS={
   'file.new':      ()=>{startFresh();markClean();showPath(null);},
   'file.open':     ()=>openDocument(),
@@ -2868,12 +2881,15 @@ const COMMANDS={
   'export.sheet':  ()=>$('exSheet').click(),
   'export.gif':    ()=>$('exGIF').click(),
   'export.pattern':()=>{openOv('ovExp');refreshOF();},
-  'edit.undo':     ()=>undo(),
-  'edit.redo':     ()=>redo(),
+  'edit.undo':     ()=>{if(!typing())undo();},
+  'edit.redo':     ()=>{if(!typing())redo();},
+  'edit.copy':     ()=>{if(!typing()&&sel)copySel();},
+  'edit.paste':    ()=>{if(!typing()&&clipboard)pasteSel();},
   'edit.clear':    ()=>clearArt(false),
   'edit.clearAll': ()=>clearArt(true),
-  'edit.selectAll':()=>{sel={x:0,y:0,w:doc.w,h:doc.h};overlay();syncStatus();},
-  'edit.deselect': ()=>{sel=null;overlay();syncStatus();},
+  'edit.selectAll':()=>{if(typing())return;
+                        sel={x:0,y:0,w:doc.w,h:doc.h};overlay();syncStatus();},
+  'edit.deselect': ()=>{if(typing())return;sel=null;overlay();syncStatus();},
   'view.zoomIn':   ()=>{zoom=Math.min(48,zoom+1);$('zoom').value=zoom;
                         $('zoomO').textContent=zoom;layout();},
   'view.zoomOut':  ()=>{zoom=Math.max(1,zoom-1);$('zoom').value=zoom;
@@ -2887,7 +2903,10 @@ const COMMANDS={
 
 // Keys the native menu owns. Electron fires the accelerator BEFORE the page
 // sees the keydown, so leaving these enabled here would undo twice per press.
-const MENU_KEYS=new Set(['z','y','a','d','n','o','s']);
+// x/c/v joined the list when the Edit menu gained Cut/Copy/Paste — without
+// those items macOS had no responder for Cmd+V and no input in the app could
+// be pasted into.
+const MENU_KEYS=new Set(['z','y','a','d','n','o','s','x','c','v']);
 
 if(native()){
   window.pfNative.onCommand((id,arg)=>{

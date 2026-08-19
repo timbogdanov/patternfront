@@ -110,6 +110,28 @@ def main() -> int:
         "fileAssociations" in read_root("electron-builder.yml")
         and "ext: patternfront" in read_root("electron-builder.yml"))
 
+    # Setting a custom application menu replaces the default one wholesale, and
+    # on macOS the clipboard shortcuts in web content are delivered by the
+    # menu. A menu with no Paste item leaves Cmd+V with nowhere to go and no
+    # input in the app can be pasted into — which is how an API key becomes
+    # untypeable. Every text-editing item must drive the web contents.
+    chk("Edit items drive the web contents, not just the canvas",
+        "win.webContents[action]()" in menu)
+    for label, accel in (("Undo", "CmdOrCtrl+Z"), ("Cut", "CmdOrCtrl+X"),
+                         ("Copy", "CmdOrCtrl+C"), ("Paste", "CmdOrCtrl+V"),
+                         ("Select All", "CmdOrCtrl+A")):
+        chk(f"{label} is in the Edit menu on {accel}",
+            re.search(rf"edit\('{re.escape(label)}',[^)]*{re.escape(accel)}", menu) is not None)
+    # A plain, unmodified key in the menu is swallowed application-wide, so a
+    # bare `Delete` accelerator stops the key deleting characters in every text
+    # field. The renderer's keydown owns it and already skips text fields.
+    chk("no bare Delete accelerator to eat the key in text fields",
+        "'Delete'" not in menu)
+    # Electron ships no context menu; the canvas has its own, so without this a
+    # text field gets neither and right-click offers no way to paste.
+    chk("right-click offers paste inside a text field",
+        "params.isEditable" in main_js and "'Paste', 'paste'" in main_js)
+
     print("\n=== packaging ===")
     yml = read_root("electron-builder.yml")
     chk("mac builds both architectures", "arch: [arm64, x64]" in yml)

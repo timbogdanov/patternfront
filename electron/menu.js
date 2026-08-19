@@ -23,6 +23,28 @@ function build({ send, recent, openRecent, quit }) {
     label, accelerator, click: () => send(id), ...extra,
   });
 
+  // Undo, cut, copy, paste and select-all mean one thing over the canvas and
+  // another inside a text field, and a custom application menu is what decides
+  // which. Setting one replaces the default menu wholesale, and on macOS the
+  // clipboard shortcuts in web content are delivered by the menu's native
+  // first-responder items — so a menu without them leaves Cmd+V with nowhere to
+  // go and pasting into any input in the app silently does nothing.
+  //
+  // Each item here does both halves. `webContents[action]()` is the text-field
+  // half and is a no-op unless something editable has focus; `send(id)` is the
+  // canvas half, which the renderer drops while a field has focus. One key,
+  // whichever meaning the focus implies, and the menu item does the same thing
+  // as its accelerator.
+  const edit = (label, id, accelerator, action) => ({
+    id: `edit-${action}`,
+    label,
+    accelerator,
+    click: (item, win) => {
+      if (win && !win.isDestroyed()) win.webContents[action]();
+      if (id) send(id);
+    },
+  });
+
   const recentItems = recent.list.length
     ? [
         ...recent.list.map(file => ({
@@ -76,14 +98,26 @@ function build({ send, recent, openRecent, quit }) {
     {
       label: '&Edit',
       submenu: [
-        cmd('Undo', 'edit.undo', 'CmdOrCtrl+Z'),
-        cmd('Redo', 'edit.redo', isMac ? 'Cmd+Shift+Z' : 'Ctrl+Y'),
+        edit('Undo', 'edit.undo', 'CmdOrCtrl+Z', 'undo'),
+        edit('Redo', 'edit.redo', isMac ? 'Cmd+Shift+Z' : 'Ctrl+Y', 'redo'),
         { type: 'separator' },
-        cmd('Select All', 'edit.selectAll', 'CmdOrCtrl+A'),
+        // Cut has no canvas twin, so it stays text-only rather than inventing
+        // one; copy and paste carry the selection commands the editor already
+        // has. All three exist mainly so a text field behaves like a text field.
+        edit('Cut', null, 'CmdOrCtrl+X', 'cut'),
+        edit('Copy', 'edit.copy', 'CmdOrCtrl+C', 'copy'),
+        edit('Paste', 'edit.paste', 'CmdOrCtrl+V', 'paste'),
+        { type: 'separator' },
+        edit('Select All', 'edit.selectAll', 'CmdOrCtrl+A', 'selectAll'),
         cmd('Deselect', 'edit.deselect', 'CmdOrCtrl+D'),
         { type: 'separator' },
-        cmd('Clear', 'edit.clear', 'Delete'),
-        cmd('Clear Every Layer', 'edit.clearAll', 'Shift+Delete'),
+        // No accelerator on purpose. A bare, unmodified key in the menu is
+        // swallowed application-wide, so `Delete` here made the key stop
+        // deleting characters in every text field — and fired alongside the
+        // renderer's own handler, clearing twice per press. The renderer owns
+        // Delete and Backspace, and already ignores them while a field has focus.
+        cmd('Clear', 'edit.clear'),
+        cmd('Clear Every Layer', 'edit.clearAll'),
       ],
     },
 
